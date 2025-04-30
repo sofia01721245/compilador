@@ -2,9 +2,73 @@
 import re
 import ply.lex as lex
 
+class Tokens:
+    def __init__(self, lista):
+        self.tokens = lista
+        self.pos = 0
+
+    # Devuelve el token actual
+    def current(self):
+        return self.tokens[self.pos]
+
+    # Consume un token, avanzando al siguiente
+    def avanza(self):
+        self.pos += 1
+        return self.tokens[self.pos]
+
+#----------------------FUNCIONES PARSER ----------------
+
+# Guarda errores en una lista
+def addError(errors, expected, token, index):
+  #print(  f"ERROR index {index}: esperaba {expected}, recibio {token}"  )
+  errors.append( f"ERROR en index {index}: esperaba {expected}, recibio {token}"  )
+
+# F ->  ( E ) | const_int
+def factor(tokens, errors):
+    token, content = tokens.current()
+
+    if token == "LPAREN":
+        token, content = tokens.avanza()
+        expr(tokens, errors)
+        token, content = tokens.current()
+        if token == "RPAREN":
+            token, content = tokens.avanza()
+        else:
+            addError(errors, ")", content, tokens.pos)
+    elif token == "CTE_INT":
+        token, content = tokens.avanza()
+    else:
+        addError(errors, "( o CTE_INT", content, tokens.pos)
+
+# T' -> * F T' | epsilon
+def termino_prime(tokens, errors):
+    token, content = tokens.current()
+    if token == "OP_MUL":
+        token, content = tokens.avanza()
+        factor(tokens, errors)
+        termino_prime(tokens, errors)
+
+# T -> F T'
+def termino(tokens, errors):
+    factor(tokens, errors)
+    termino_prime(tokens, errors)
+
+# E' -> + T E' | epsilon
+# <expresion_prime> ::= + <termino> <expresion_prime> | <vacio>
+def expr_prime(tokens, errors):
+    token, content = tokens.current()
+    if token == "OP_SUM":
+        token, content = tokens.avanza()
+        termino(tokens, errors)
+        expr_prime(tokens, errors)
+
+# E -> T E'
+def expr(tokens, errors):
+    termino(tokens, errors)
+    expr_prime(tokens, errors)
+
 # Se define clase Lexer
 class PlyTokenizer:
-
     def __init__(self):
         # Tabla de símbolos para guardar identificadores y las líneas en un diccionario
         self.symbol_table = {}
@@ -12,6 +76,8 @@ class PlyTokenizer:
         self.tokens_by_line = []
         # Guarda errores lexicos
         self.errors = []
+        #guardar lineas formateadas para parser
+        self.formatted_lines = []
 
         # palabras reservadas
         self.keywords = {
@@ -39,6 +105,7 @@ class PlyTokenizer:
 
         self.lexer = lex.lex(module=self)
 
+#----------------------FUNCIONES LEXER -----------------
     # Regex de Tokens Literales
     t_OP_SUM = r'\+'
     t_OP_SUB = r'-'
@@ -115,13 +182,23 @@ class PlyTokenizer:
         for line_number, line in enumerate(lines, 1):
             self.lexer.input(line)
             line_tokens = []
+            formatted_tokens = []
+
             while True:
                 tok = self.lexer.token()
                 if not tok:
                     break
                 line_tokens.append((tok.type, tok.value, tok.lexpos))
-            self.tokens_by_line.append((line_number, line.rstrip(), line_tokens))
+                formatted_tokens.append([tok.type, tok.value])
 
+            formatted_tokens.append(["EOL", ""])  # end of line
+            self.tokens_by_line.append((line_number, line.rstrip(), line_tokens))
+            self.formatted_lines.append(formatted_tokens)
+
+    #getter para informacion dentro del constructor
+    def get_formatted_lines(self):
+        return self.formatted_lines
+    
     # Imprime los tokens encontrados por linea
     def print_tokens(self):
         print("\n--- TOKEN STREAM POR LÍNEA ---")
@@ -180,8 +257,30 @@ with open("mayor.ld", "w") as f:
     f.write(test_code)
 
 
+# ----------------LEXER------------------
 tokenizer = PlyTokenizer()
 tokenizer.tokenize_file("mayor.ld")
 tokenizer.print_tokens()
 tokenizer.print_symbol_table()
 tokenizer.print_errors()
+
+
+# ----------------PARSER------------------
+lineas = tokenizer.get_formatted_lines()
+
+for linea in lineas:
+    print("\n", linea)
+
+    tokens = Tokens(linea)
+    errors = []
+
+    expr(tokens, errors)
+
+    if tokens.pos < len(tokens.tokens) - 1:
+        addError(errors, "operador", tokens.current(), tokens.pos)
+
+    if len(errors) == 0:
+        print("OKS\n")
+    else:
+        for e in errors:
+            print(e)
