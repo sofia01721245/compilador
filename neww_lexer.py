@@ -1,6 +1,7 @@
 # Importamos librerias necesarias
 import re
 import ply.lex as lex
+from collections import deque
 
 # Se define clase Lexer
 class PlyTokenizer:
@@ -33,7 +34,7 @@ class PlyTokenizer:
         # Lista de todos los tipos de tokens
         self.tokens = list(self.keywords.values()) + [
             'ID', 'CTE_INT', 'CTE_FLOAT', 'CTE_STRING', 'OP_SUM', 'OP_SUB', 'OP_MUL', 'OP_DIV', 'OP_MOD',
-            'ASSIGN', 'EQUAL', 'NOT_EQUAL', 'GREATER', 'LESS', 'GREATER_EQUAL', 'LESS_EQUAL',
+            'ASSIGN_SIGN', 'EQUAL', 'NOT_EQUAL', 'GREATER', 'LESS', 'GREATER_EQUAL', 'LESS_EQUAL',
             'SEMICOLON', 'COMMA', 'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE',
             'LBRACKET', 'RBRACKET', 'COLON', 'COMMENT'
         ]
@@ -48,7 +49,7 @@ class PlyTokenizer:
     t_OP_MUL = r'\*'
     t_OP_DIV = r'/'
     t_OP_MOD = r'%'
-    t_ASSIGN = r'='
+    t_ASSIGN_SIGN= r'='
     t_EQUAL = r'=='
     t_NOT_EQUAL = r'!='
     t_GREATER = r'>'
@@ -162,158 +163,140 @@ class PlyTokenizer:
 #--------------------------END LEXER------------------------------------------------------------
 
 #--------------------------FUNCIONES PARSER-------------------------------
-# Se define clase Tokens
-class Tokens:
-  # Atributos
-  tokens = []       # una lista de tokens
-  pos = 0           # un indice para el token actual
+parsing_table = {
+    'ASSIGN': {
+        'ID': ['ID', 'ASSIGN_SIGN', 'EXPRESION', 'SEMICOLON']
+    },
+    'EXPRESION': {
+        'ID': ['EXP', 'OPCIONAL'],
+        'CTE_INT': ['EXP', 'OPCIONAL'],
+        'CTE_FLOAT': ['EXP', 'OPCIONAL'],
+    },
+    'OPCIONAL': {
+        'LESS': ['OPREL', 'EXP'],
+        'GREATER': ['OPREL', 'EXP'],
+        'NOT_EQUAL': ['OPREL', 'EXP'],
+        'EQUAL': ['OPREL', 'EXP'],
+        'GREATER_EQUAL': ['OPREL', 'EXP'],
+        'LESS_EQUAL': ['OPREL', 'EXP'],
+        'RPAREN': [],
+        'SEMICOLON': [],
+    },
+    'OPREL': {
+        'LESS': ['LESS'],
+        'GREATER': ['GREATER'],
+        'NOT_EQUAL': ['NOT_EQUAL'],
+        'EQUAL': ['EQUAL'],
+        'GREATER_EQUAL': ['GREATER_EQUAL'],
+        'LESS_EQUAL': ['LESS_EQUAL']
+    },
+    'EXP': {
+        'ID': ['TERMINO', 'MASMENOS'],
+        'CTE_INT': ['TERMINO', 'MASMENOS'],
+        'CTE_FLOAT': ['TERMINO', 'MASMENOS'],
+    },
+    'MASMENOS': {
+        'OP_SUM': ['OP_SUM', 'EXP'],
+        'OP_SUB': ['OP_SUB', 'EXP'],
+        'RPAREN': [],
+        'SEMICOLON': [],
+        'NOT_EQUAL': [],
+        'EQUAL': [],
+        'GREATER': [],
+        'LESS': [],
+        'GREATER_EQUAL': [],
+        'LESS_EQUAL': [],
+    },
+    'TERMINO': {
+        'ID': ['FACTOR', 'PORDIV'],
+        'CTE_INT': ['FACTOR', 'PORDIV'],
+        'CTE_FLOAT': ['FACTOR', 'PORDIV'],
+    },
+    'PORDIV': {
+        'OP_MUL': ['OP_MUL', 'TERMINO'],
+        'OP_DIV': ['OP_DIV', 'TERMINO'],
+        'OP_SUM': [],
+        'OP_SUB': [],
+        'RPAREN': [],
+        'SEMICOLON': [],
+        'NOT_EQUAL': [],
+        'EQUAL': [],
+        'GREATER': [],
+        'LESS': [],
+        'GREATER_EQUAL': [],
+        'LESS_EQUAL': [],
+    },
+    'FACTOR': {
+        'ID': ['ID'],
+        'CTE_INT': ['CTE_INT'],
+        'CTE_FLOAT': ['CTE_FLOAT'],
+    },
+}
 
-  # Constructor de la clase...
-  def __init__(self, lista):
-    self.tokens = lista
-    self.pos = 0
+terminals = ['ID', 'ASSIGN_SIGN', 'CTE_FLOAT', 'CTE_INT', 'OP_SUM', 'OP_MUL', 'OP_DIV', 'OP_SUB', 'GREATER', 'LESS_EQUAL', 'EQUAL', 'NOT_EQUAL', 'SEMICOLON', '$']
 
-  # Devuelve el token actual
-  def current(self):
-    return self.tokens[self.pos]
+def parse_tokens(tokens):
+    stack = deque()
+    stack.append('$') 
+    stack.append('ASSIGN') #Después se tendrá que identificar con primer variable del lexer
+    index = 0
 
-  # Consume un token, avanzando al siguiente
-  def avanza(self):
-    if self.pos < len(self.tokens) - 1:
-        self.pos += 1
-    return self.tokens[self.pos]
+    if not tokens:
+        return True
 
+    tokens.append(('$', '$'))
 
-# Guarda errores en una lista
-def addError(errors, expected, token, index):
-  #print(  f"ERROR index {index}: esperaba {expected}, recibio {token}"  )
-  errors.append( f"ERROR en index {index}: esperaba {expected}, recibio {token}"  )
+    while stack:
+        top = stack.pop()
+        current_token = tokens[index] if index < len(tokens) else ('$','')
 
-# F ->  ( E ) | const_int | ID
-def factor(tokens, errors):
-  # Obten el token actual
-  if len(tokens.tokens) == 0:
-    return
-    
-  token, content = tokens.current()  # <------ el tipo de token, y el valor  ej. 'const_int', 14
+        token_type, token_value = current_token
 
-  if token == "LPAREN":
-      # Si es un '('
-      tokens.avanza()
-      expr(tokens, errors)
-      token, content = tokens.current()
-      if token == "RPAREN":
-          tokens.avanza()
-      else:
-          addError(errors, ")", content, tokens.pos)
-  elif token == "CTE_INT" or token == "CTE_FLOAT":
-      # Si es un número entero o flotante
-      tokens.avanza()
-  elif token == "ID":
-      # Si es un identificador
-      tokens.avanza()
-  else:
-      addError(errors, "( o CTE_INT o ID", content, tokens.pos)
-
-
-
-# T' -> * F T' | epsilon
-def termino_prime(tokens, errors):
-
-  if(len(tokens.tokens) == 0):
-        return
-    
-  # Obten el token actual
-  token, content = tokens.current()
-
-  # Si el token actual es un '*'
-  if token == "OP_MUL" or token == "OP_DIV":
-    # Avanza al siguiente token
-    token, content = tokens.avanza()
-    # Llama a factor
-    factor(tokens, errors)
-    # Llama a termino_prime
-    termino_prime(tokens, errors)
-  #Se va por epsilon
-
-# rel_expr -> E (rel_op E)?
-def rel_expr(tokens, errors):
-    expr(tokens, errors)
-    
-    if tokens.pos < len(tokens.tokens):
-        if(len(tokens.tokens) == 0):
-            return
-        token, content = tokens.current()
-        if token in ["GREATER", "LESS", "EQUAL", "NOT_EQUAL", "LESS_EQUAL", "GREATER_EQUAL"]:
-            tokens.avanza()
-            expr(tokens, errors)
-
-# ASSIGN -> ID = rel_expr ;
-def assign(tokens, errors):
-    if(len(tokens.tokens) == 0):
-        return
-
-    token, content = tokens.current()
-    if token == "ID":
-        tokens.avanza()
-        token = tokens.current()
-        if token[0] == "ASSIGN":
-            tokens.avanza()
-            rel_expr(tokens, errors)   
-            token = tokens.current()
-            if token[0] == "SEMICOLON":
-                tokens.avanza()
+        #si es terminal no la tenemos que desplegar más
+        if top in terminals:
+            if top == token_type:
+                index += 1
             else:
-                addError(errors, ";" , token[1], tokens.pos)
+                print(f"Se esperaba'{top}' pero es '{token_type}'")
+                return False
+
+        #End of input
+        elif top == '$':
+            if token_type == '$':
+                return True
+            else:
+                return False
+
+        # No terminales se sacan de tabla de parse
+        elif top in parsing_table:
+            production = parsing_table[top].get(token_type)
+
+            if not production:
+                if token_type == 'ID':
+                    production = parsing_table[top].get('ID') 
+                elif token_type == 'CTE_FLOAT':
+                    production = parsing_table[top].get('CTE_FLOAT') 
+                elif token_type == 'CTE_INT':
+                    production = parsing_table[top].get('CTE_INT')
+
+            if production is None:
+                print(f"No exsiste '{top}' en tabla de parsers")
+                return False
+
+            # Agregard componentes de nueva gramatica
+            for symbol in reversed(production):
+                if symbol != '':
+                    stack.append(symbol)
         else:
-            addError(errors, "=" , token[1], tokens.pos)
-    else:
-        addError(errors, "ID" , content, tokens.pos)
+            print(f"No se reconoce: '{top}'")
+            return False
 
-# T -> F T'
-def termino(tokens, errors):
-  # Llama a factor
-  factor(tokens, errors)
-  # Luego llama a termino_prime
-  termino_prime(tokens, errors)
+    #Si quedan tokens despues de EOF 
+    if index < len(tokens) and tokens[index][0] != '$':
+        print(f"Tokens que quedan después de EOF: {tokens[index:]}") 
+        return False
 
-# E' -> + T E' | epsilon
-# <expresion_prime> ::= + <termino> <expresion_prime> | <vacio>
-def expr_prime(tokens, errors):
-  if(len(tokens.tokens) == 0):
-    return
-  
-  # Obten el token actual
-  token, content = tokens.current()
-  # Si el token actual es un '+'
-  if token == "OP_SUM" or token == "OP_SUB":
-    # Avanza al siguiente token
-    token, content = tokens.avanza()
-    # Llama a termino
-    termino(tokens, errors)
-    # Luego llama a expr_prime
-    expr_prime(tokens, errors)
-
-  # Si no, nada... se asume que es <vacio>
-
-# E -> T E'
-# <expresion> ::= <termino> <expresion_prime>
-def expr(tokens, errors):
-  # Llama a termino
-  termino(tokens, errors)
-  # Luego, llama a expresion prime...
-  expr_prime(tokens, errors)
-
-def statement(tokens, errors):
-    if len(tokens.tokens) == 0:
-        return
-    
-    token, content = tokens.current()
-
-    if token == "ID":
-        assign(tokens, errors)
-    else:
-        expr(tokens, errors)  
+    return True
 #---------------------------------END PARSER---------------
 
 # Código de prueba
@@ -323,7 +306,7 @@ y = 3.14 * x + 2.0;
 z = y / 2.0 - 1.0;
 
 cond = x > y;
-cond = y <= z + 1.5;
+cond = y <= z + 1;
 exp = y==x;
 ex2 = z!=y;
 """
@@ -344,19 +327,12 @@ lineas = tokenizer.get_formatted_lines()
 print(lineas)
 
 for linea in lineas:
-  print("\n",linea)
+    print("\n", linea)
 
-  tokens = Tokens(linea)
-  errors = []
+    token_line = linea
 
-  statement(tokens, errors) 
+    result = parse_tokens(token_line)
+    if(result == True):
+        print("OK")
 
-  if tokens.pos < len(tokens.tokens)-1:       #   Si no se consumio toda la linea, hubo algun token inesperado
-    addError( errors, "operador", tokens.current() , tokens.pos )
 
-  if len(errors) == 0 :
-    print("OKS\n")
-  else:
-    for e in errors:
-      print(e)
-    #print("NOPE\n", tokens.pos)
