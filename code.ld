@@ -1,9 +1,22 @@
 
-x = 10.5;
-y = 3.14 * x + 2.0;
-z = y / 2.0 - 1.0;
 
-cond = x > y;
-cond = y <= z + 1;
-exp = y==x;
-ex2 = z!=y;
+#Programa caso de prueba fibonacci hasta n
+
+program fibonacci;
+var n, i, a, b, temp : int;
+
+main
+{
+	a = 0;
+	b = 1;
+	n = 10;
+	i = 0;
+	do {
+        	print(a);
+        	temp = b;
+        	b = a + b;
+        	a = temp;
+        	i = i + 1;
+	} while(i < n);
+}
+end
