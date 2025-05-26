@@ -4,8 +4,8 @@ import ply.yacc as yacc
 from lexer import tokens
 
 def p_programa(p):
-    'Programa : KEYWORD_PROGRAM ID SEMICOLON vars_opt funcs_opt KEYWORD_MAIN body KEYWORD_END SEMICOLON'
-    p[0] = ('Programa', [p[2], p[4], p[5], p[7], 'end', ';'])
+    'Programa : KEYWORD_PROGRAM ID SEMICOLON vars_opt funcs_opt KEYWORD_MAIN LBRACE body RBRACE KEYWORD_END SEMICOLON'
+    p[0] = ('Programa', [p[2], p[4], p[5], p[6], p[8], 'end', ';'])
 
 def p_vars_opt(p):
     '''vars_opt : vars_opt VARS
@@ -13,7 +13,7 @@ def p_vars_opt(p):
                 | empty'''
     if len(p) == 3:
         p[0] = p[1] + [p[2]]
-    elif len(p) == 2:
+    elif len(p) == 2 and p[1] != 'empty':
         p[0] = [p[1]]
     else:
         p[0] = []
@@ -52,7 +52,8 @@ def p_type(p):
     p[0] = ('type', [p[1]])
 
 def p_funcs_opt(p):
-    '''funcs_opt : FUNCS
+    '''funcs_opt : funcs_opt FUNCS
+                 | FUNCS
                  | empty'''
     if p[1] is not None:
         p[0] = ('funcs_opt', [p[1]])
@@ -62,37 +63,16 @@ def p_funcs_opt(p):
 def p_FUNCS(p):
     'FUNCS : KEYWORD_VOID ID LPAREN parametros_opt RPAREN LBRACKET vars_opt body RBRACKET SEMICOLON'
     func_name = p[2]
-    params = p[4]  # lista de parámetros (name + type)
-    vars_decl = p[7]  # si tienes semántica para registrar variables
-    body = p[8]
-
-    if func_name in estructura.func_dir:
-        raise Exception(f"Function '{func_name}' already declared.")
-
-    # Registrar en el directorio de funciones
-    estructura.func_dir[func_name] = {
-        'type': 'void',
-        'params': [(name, typ) for (name, typ) in params],
-        'vars': {},  # aquí puedes poner variables locales
-        'start_quad': None  # si luego haces cuádruplos, lo llenarás
+    # Create the entry *before* vars_opt gets processed
+    estructura.func_directory[func_name] = {
+        'params': p[4],
+        'vars': {},   # vars_opt will populate this while current_function is set
+        'body': p[8], # actual body
     }
 
-    # Cambiar el contexto de función actual
-    global current_function, local_var_table
-    current_function = func_name
-    local_var_table = {}
+    current_function = None  # reset AFTER body is parsed
 
-    # Guardar parámetros en la tabla de variables local
-    for param_name, param_type in params:
-        local_var_table[param_name] = {
-            'type': param_type,
-            'scope': 'local',
-            'kind': 'param'
-        }
-
-    estructura.func_dir[func_name]['vars'] = local_var_table.copy()
-
-    p[0] = ('FUNCS', [func_name, params, vars_decl, body])
+    p[0] = ('FUNCS', [func_name, p[4], p[7], p[8]])
 
 def p_parametros_opt(p):
     '''parametros_opt : parametros
@@ -112,16 +92,21 @@ def p_param_list(p):
         p[0] = []
 
 def p_body(p):
-    'body : LBRACE statement_list RBRACE'
-    p[0] = ('body', [p[2]])
+    'body : statement_list'
+    p[0] = ('body', [p[1]])
 
 def p_statement_list(p):
-    '''statement_list : statement_list statement
-                       | statement'''
+    '''statement_list : statement statement_list
+                      | statement
+                      | empty'''
     if len(p) == 3:
-        p[0] = p[1] + [p[2]]
-    else:
-        p[0] = [p[1]]
+        p[0] = [p[1]] + p[2]
+    elif len(p) == 2:
+        # Could be a single statement or empty
+        if p[1] is None:  # empty production returns None
+            p[0] = []
+        else:
+            p[0] = [p[1]]
 
 def p_statement(p):
     '''statement : assign
@@ -174,7 +159,7 @@ def p_print_item(p):
         p[0] = ('print_item', [('CTE_STRING', p[1])])
 
 def p_cycle(p):
-    'cycle : KEYWORD_DO body KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON'
+    'cycle : KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON'
     
     start_line = estructura.linea + 1 - len(p[2])
 
@@ -195,7 +180,7 @@ def p_cycle(p):
 
 
 def p_condition(p):
-    'condition : KEYWORD_IF LPAREN expresion RPAREN cuadr_if body else_arg SEMICOLON'
+    'condition : KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON'
     if estructura.stack_saltos:
         salto_final_else = estructura.stack_saltos.pop()
         estructura.cuadruplos[salto_final_else] = (
@@ -218,7 +203,7 @@ def p_cuadr_if(p):
     estructura.stack_saltos.append(estructura.linea - 1)
 
 def p_else_arg(p):
-    'else_arg : KEYWORD_ELSE cuadr_else body'
+    'else_arg : KEYWORD_ELSE cuadr_else LBRACE body RBRACE'
     p[0] = [p[1], p[3]]
 
 def p_cuadr_else(p):

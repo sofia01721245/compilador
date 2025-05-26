@@ -1,5 +1,5 @@
 from lexer import PlyTokenizer
-from parser_rules import parser
+from parser_rules import parser, syntax_errors
 from utils import print_tree
 from semantic import estructura, print_quadruples, print_symbol_table
 
