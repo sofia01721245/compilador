@@ -1,34 +1,14 @@
-program prueba_semantica;
+# C a F
 
-var A, B, C : int;
-var D, E : float;
+program celsius_to_fahrenheit;
 
-main {
-    A = 10;
-    B = 2;
-    C = A + B * 3;  
-    D = 4.5;
-    E = D / 2.0;    
+var celsius, fahrenheit : float;
 
-    A = 5.6;
+main{
+	celsius = 30;
+	fahrenheit = (celsius * 1.8) + 32;
+	print("Temperatura en Fahrenheit: ");
+	print(f);
+}
+end;
 
-    X = 2;
-
-    if (A > B) {
-        C = C - 1;
-    };
-
-    if (A + B) {
-        C = A;
-    };
-
-    if (A < B) {
-        A = A + 1;
-    } else {
-        B = B - 1;
-    };
-
-    do {
-        A = A - 1;
-    } while (A > 0);
-} end;

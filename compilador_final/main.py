@@ -4,40 +4,32 @@ from utils import print_tree
 from semantic import estructura, print_quadruples, print_symbol_table
 
 # Crear archivo ld
-input_text = """program prueba_semantica;
+input_text = """
+program mayor_numero;
 
-var A, B, C : int;
-var D, E : float;
+var x, y, z, mayor : int;
 
 main {
-    A = 10;
-    B = 2;
-    C = A + B * 3;  
-    D = 4.5;
-    E = D / 2.0;    
+    x = 10;
+    y = 25;
+    z = 15;
 
-    A = 5.6;
-
-    X = 2;
-
-    if (A > B) {
-        C = C - 1;
-    };
-
-    if (A + B) {
-        C = A;
-    };
-
-    if (A < B) {
-        A = A + 1;
+    if(x > y) {
+        if (x > z) {
+            mayor = x;
+        } else {
+            mayor = z;
+        };
     } else {
-        B = B - 1;
+        if (y > z) {
+            mayor = y;
+        } else {
+            mayor = z;
+        };
     };
-
-    do {
-        A = A - 1;
-    } while (A > 0);
-} end;
+    print(mayor);
+}
+end;
 """
 
 with open("semantica.ld", "w") as f:
