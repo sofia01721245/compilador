@@ -1,19 +1,34 @@
+program prueba_semantica;
 
-program prueba3;
-
-var A, B : int;
+var A, B, C : int;
+var D, E : float;
 
 main {
-    A = 3;
-    B = 5;
+    A = 10;
+    B = 2;
+    C = A + B * 3;  
+    D = 4.5;
+    E = D / 2.0;    
 
-    do {
+    A = 5.6;
+
+    X = 2;
+
+    if (A > B) {
+        C = C - 1;
+    };
+
+    if (A + B) {
+        C = A;
+    };
+
+    if (A < B) {
         A = A + 1;
+    } else {
         B = B - 1;
-    } while (A < B);
+    };
 
     do {
-        A = A + 1;
-    } while (A + B);
+        A = A - 1;
+    } while (A > 0);
 } end;
-
