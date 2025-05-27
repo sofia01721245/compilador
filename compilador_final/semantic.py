@@ -1,16 +1,17 @@
 class Variable:
-    def __init__(self, name, tipo):
+    def __init__(self, name, tipo, is_param):
         self.name = name
         self.tipo = tipo
+        self.is_param = is_param
 
 class VarTable:
     def __init__(self):
         self.variables = {}
 
-    def add_variable(self, name, tipo):
+    def add_variable(self, name, tipo, is_param=False):
         if name in self.variables:
             raise Exception(f"Variable '{name}' already declared.")
-        self.variables[name] = Variable(name, tipo)
+        self.variables[name] = Variable(name, tipo, is_param)
 
     def get_type(self, name):
         if name in self.variables:
@@ -18,21 +19,22 @@ class VarTable:
         return None
 
 class Function:
-    def __init__(self, name):
+    def __init__(self, name, start_quad):
         self.name = name
         self.var_table = VarTable()
+        self.start_quad = start_quad
 
 class FunctionDirectory:
     def __init__(self):
         self.functions = {}
         self.global_var_table = VarTable()
 
-    def add_function(self, name):
+    def add_function(self, name, start_quad):
         if name in self.functions:
             raise Exception(f"Function '{name}' already declared.")
-        self.functions[name] = Function(name)
+        self.functions[name] = Function(name, start_quad)
 
-    def add_variable(self, name, tipo, function_name):
+    def add_variable(self, name, tipo, function_name, is_param):
         if function_name != "global" and function_name not in self.functions:
             raise Exception(f"Function '{function_name}' not declared.")
 
@@ -44,7 +46,7 @@ class FunctionDirectory:
             func = self.functions[function_name]
             if name in func.var_table.variables:
                 raise Exception(f"Variable '{name}' already declared in function '{function_name}'.")
-            func.var_table.add_variable(name, tipo)
+            func.var_table.add_variable(name, tipo, is_param)
 
     def get_variable_type(self, name, scope):
         if scope != "global":
@@ -66,6 +68,26 @@ class FunctionDirectory:
                     return True
             else: 
                 return False
+
+    def function_exsist(self, scope):
+        if scope in self.functions :
+            return True
+        else: 
+            return False
+
+    def get_func_param(self, scope):
+        if scope not in self.functions:
+            raise Exception(f"Function '{scope}' not found.")
+        
+        var_table = self.functions[scope].var_table.variables
+        params = [(name, var.tipo) for name, var in var_table.items() if var.is_param]
+        return params
+
+    def get_start_line(self, scope): 
+        if scope not in self.functions:
+            raise Exception(f"Function '{scope}' not found.")
+        return self.functions[scope].start_quad
+
 
 # Main structure holding state across parsing
 class Estructura:
@@ -164,11 +186,13 @@ def print_quadruples():
     print("-" * 66)
     
     for quad in estructura.cuadruplos:
-        num, op, arg1, arg2, res = quad
-
-        tipo_res = next((t for (v, t) in estructura.stack_operandos if v == res), '-')
+        if len(quad)==6:
+            num, op, arg1, arg2, res, type = quad
+        elif len(quad) ==5: 
+            num, op, arg1, arg2, res = quad
+            type = "-"
         
-        print(f"{num:<4} {op:<10} {str(arg1):<12} {str(arg2):<12} {str(res):<12} {tipo_res}")
+        print(f"{num:<4} {op:<10} {str(arg1):<12} {str(arg2):<12} {str(res):<12} {type}")
 
 def print_symbol_table():
     print("\nTabla de símbolos globales:")

@@ -25,6 +25,7 @@ main {
             mayor = z;
         };
     };
+    title(a);
     print(mayor);
 }
 end;

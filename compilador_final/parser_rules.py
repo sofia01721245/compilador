@@ -30,7 +30,7 @@ def p_VARS(p):
                 f"Variable '{var_id}' ya declarada en función '{estructura.current_function}'."
             )
         else:
-            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function)
+            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param = False)
     p[0] = ('VARS', p[2])
 
 def p_var_list(p):
@@ -69,7 +69,6 @@ def p_FUNCS(p):
     params = p[5]
     vars_local = p[8]
     body = p[9]
-    
     p[0] = ('FUNCS', [func_name, params, vars_local, body])
 
 def p_func_start(p):
@@ -80,7 +79,10 @@ def p_func_start(p):
     
     # Add function to directory and switch scope
     try:
-        estructura.func_directory.add_function(func_name)
+        estructura.linea += 1
+        estructura.cuadruplos.append((estructura.linea, '=', func_name, None, "function"))
+        start_quad = estructura.linea
+        estructura.func_directory.add_function(func_name, start_quad)
         estructura.current_function = func_name
     except Exception as e:
         estructura.semantic_errors.append(str(e))
@@ -114,7 +116,7 @@ def p_parametros(p):
                 f"Parametro '{var_id}' ya declarado en función '{estructura.current_function}'."
             )
         else:
-            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function)  
+            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param = True)  
 
     p[0] = ('parametros', all_params)
 
@@ -175,12 +177,24 @@ def p_assign(p):
     
     # Generate quadruple
     estructura.linea += 1
-    estructura.cuadruplos.append((estructura.linea, '=', valor, None, var_name))
+    estructura.cuadruplos.append((estructura.linea, '=', var_name, valor, None, tipo_variable))
     
     p[0] = ('assign', [('ID', var_name), p[3]])
 
 def p_print(p):
     'print : KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON'
+    for item in p[3]:
+        if item[0] == 'print_item':
+            # Handle string literals
+            if item[1][0][0] == 'CTE_STRING':
+                estructura.linea += 1
+                estructura.cuadruplos.append((estructura.linea, 'PRINT', item[1][0][1], None, None, estructura.func_directory.get_variable_type(item[1][0][1], estructura.current_function)))
+        else:
+            if estructura.stack_operandos:
+                operand, _ = estructura.stack_operandos.pop()
+                estructura.linea += 1
+                estructura.cuadruplos.append((estructura.linea, 'PRINT', operand, None, None, "operand"))
+    
     p[0] = ('print', [p[3]])
 
 def p_print_items(p):
@@ -194,8 +208,8 @@ def p_print_items(p):
 def p_print_item(p):
     '''print_item : expresion
                   | CTE_STRING'''
-    if isinstance(p[1], tuple):
-        p[0] = ('i ', [p[1]])
+    if isinstance(p[1], tuple) and p[1][0] != 'CTE_STRING':
+        p[0] = ('expresion', p[1])
     else:
         p[0] = ('print_item', [('CTE_STRING', p[1])])
 
@@ -281,14 +295,12 @@ def p_else_arg_empty(p):
 def p_f_call(p):
     'f_call : ID LPAREN expresion_list_opt RPAREN SEMICOLON'
     func_name = p[1]
-    args = p[3]  # lista de expresiones
+    args = (p[3])[1][0][1]  # lista de expresiones
     # verificar que exsiste la funcion
-    if func_name not in estructura.func_dir:
+    if estructura.func_directory.function_exsist(func_name) == False:
         estructura.semantic_errors.append(f"Funcion '{func_name}' no esta declarada.")
 
-    func_info = estructura.func_dir[func_name]
-    expected_params = func_info['params']
-
+    expected_params = estructura.func_directory.get_func_param(func_name)
     # validar cuantos argumentos se esperan
     if len(args) != len(expected_params):
         estructura.semantic_errors.append(f"Funcion '{func_name}' necesita {len(expected_params)} argumentos, pero recibió {len(args)}.")
@@ -296,17 +308,19 @@ def p_f_call(p):
     # validar tipos
     for i in range(len(expected_params)):
         param_name, expected_type = expected_params[i]
-        arg = args[i]
-        arg_type = arg['type']
+        arg = args[i][1]
+        arg_type = estructura.func_directory.get_variable_type(arg, estructura.current_function)
 
         if arg_type != expected_type:
             estructura.semantic_errors.append(f"Error semantico de tipos en argumento {i+1} de la funcion '{func_name}'. Se esperaba '{expected_type}', y recibió '{arg_type}'.")
-
+    
+    func_start_quad = estructura.func_directory.get_start_line(func_name)
+    estructura.linea+=1
+    estructura.cuadruplos.append((estructura.linea, 'GOTO', func_name, None, func_start_quad))
     p[0] = ('f_call', {
         'function': func_name,
         'args': args
     })
-
 
 def p_expresion_list_opt(p):
     '''expresion_list_opt : expresion_list

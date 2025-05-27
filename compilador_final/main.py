@@ -31,6 +31,7 @@ main {
             mayor = z;
         };
     };
+    title(x);
     print(mayor);
 }
 end;
