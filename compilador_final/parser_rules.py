@@ -314,9 +314,14 @@ def p_f_call(p):
         if arg_type != expected_type:
             estructura.semantic_errors.append(f"Error semantico de tipos en argumento {i+1} de la funcion '{func_name}'. Se esperaba '{expected_type}', y recibió '{arg_type}'.")
     
+    #TODO: Preguntar como usar esto enla tabla
+    return_address = estructura.linea + 2  
+    estructura.stack_saltos.append(return_address) 
+    
     func_start_quad = estructura.func_directory.get_start_line(func_name)
-    estructura.linea+=1
+    estructura.line += 1
     estructura.cuadruplos.append((estructura.linea, 'GOTO', func_name, None, func_start_quad))
+    
     p[0] = ('f_call', {
         'function': func_name,
         'args': args

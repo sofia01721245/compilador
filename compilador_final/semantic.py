@@ -158,21 +158,21 @@ estructura = Estructura()
 def get_operand_and_type(operand):
     try:
         if operand[0] == 'factor':
-            varcte = operand[1][0] 
-            if varcte[0] == 'varcte':
-                id_tuple = varcte[1][0][0] 
-                if id_tuple == 'CTE_INT':
-                    return ['int', id_tuple[1]]
-                elif id_tuple == 'CTE_FLOAT':
-                    return ['float', id_tuple[1]]
+            operand = operand[1][0] 
+        elif operand[0] == 'varcte':
+            id_tuple = operand[1][0][0] 
+            if id_tuple == 'CTE_INT':
+                return ['int', id_tuple[1]]
+            elif id_tuple == 'CTE_FLOAT':
+                return ['float', id_tuple[1]]
 
-                var_name = varcte[1][0][1]
-                scope = estructura.current_function
-                tipo = estructura.func_directory.get_variable_type(var_name, scope)
-                if tipo is None:
-                    estructura.semantic_errors.append(f"Error semántico: Variable '{var_name}' no declarada.")
-                    return [None, var_name]
-                return [tipo, var_name]
+            var_name = operand[1][0][1]
+            scope = estructura.current_function
+            tipo = estructura.func_directory.get_variable_type(var_name, scope)
+            if tipo is None:
+                estructura.semantic_errors.append(f"Error semántico: Variable '{var_name}' no declarada.")
+                return [None, var_name]
+            return [tipo, var_name]
 
         elif operand[0].startswith('t'):  # temporal
             return [operand[1], operand[0]]
