@@ -1,3 +1,73 @@
+class Variable:
+    def __init__(self, name, tipo):
+        self.name = name
+        self.tipo = tipo
+
+class VarTable:
+    def __init__(self):
+        self.variables = {}
+
+    def add_variable(self, name, tipo):
+        if name in self.variables:
+            raise Exception(f"Variable '{name}' already declared.")
+        self.variables[name] = Variable(name, tipo)
+
+    def get_type(self, name):
+        if name in self.variables:
+            return self.variables[name].tipo
+        return None
+
+class Function:
+    def __init__(self, name):
+        self.name = name
+        self.var_table = VarTable()
+
+class FunctionDirectory:
+    def __init__(self):
+        self.functions = {}
+        self.global_var_table = VarTable()
+
+    def add_function(self, name):
+        if name in self.functions:
+            raise Exception(f"Function '{name}' already declared.")
+        self.functions[name] = Function(name)
+
+    def add_variable(self, name, tipo, function_name):
+        if function_name != "global" and function_name not in self.functions:
+            raise Exception(f"Function '{function_name}' not declared.")
+
+        if function_name == "global":
+            if name in self.global_var_table.variables:
+                raise Exception(f"Variable '{name}' already declared in global scope.")
+            self.global_var_table.add_variable(name, tipo)
+        else:
+            func = self.functions[function_name]
+            if name in func.var_table.variables:
+                raise Exception(f"Variable '{name}' already declared in function '{function_name}'.")
+            func.var_table.add_variable(name, tipo)
+
+    def get_variable_type(self, name, scope):
+        if scope != "global":
+            if scope in self.functions:
+                tipo = self.functions[scope].var_table.get_type(name)
+                if tipo:
+                    return tipo
+        return self.global_var_table.get_type(name)
+
+    def has_variable(self, scope, name):
+        if scope == 'global':
+            if name in self.global_var_table.variables: 
+                return True
+            else: 
+                return False
+        else: 
+            if scope in self.functions :
+                if name in self.functions[scope].var_table.variables:
+                    return True
+            else: 
+                return False
+
+# Main structure holding state across parsing
 class Estructura:
     def __init__(self):
         self.cubo = {
@@ -46,25 +116,16 @@ class Estructura:
             ('float', 'int', '!='): 'bool',
         }
 
-        self.func_directory = {
-            'global': {
-                'type': 'void',
-                'vars': {},         # variables globales
-                'params': [],
-                'start_quad': 0
-            }
-        }
-        # guarda funcion actual para insertar vars o params
+        self.func_directory = FunctionDirectory()
         self.current_function = 'global'
         self.stack_operandos = []
         self.stack_tipos = []
-        self.stack_scopes = ['global']  # empieza con el scope global
+        self.stack_scopes = ['global']
+        self.stack_saltos = []
+        self.cuadruplos = []
         self.semantic_errors = []
         self.counter_temporales = 0
-        self.symbol_table = {}  # variable name -> type
         self.linea = 0
-        self.cuadruplos = []
-        self.stack_saltos = [] 
 
     def new_temp(self):
         self.counter_temporales += 1
@@ -84,15 +145,17 @@ def get_operand_and_type(operand):
                     return ['float', id_tuple[1]]
 
                 var_name = varcte[1][0][1]
-                if var_name not in estructura.symbol_table:
-                    estructura.semantic_errors.append(f"Error de semántica: Variable '{var_name}' no declarada.")
+                scope = estructura.current_function
+                tipo = estructura.func_directory.get_variable_type(var_name, scope)
+                if tipo is None:
+                    estructura.semantic_errors.append(f"Error semántico: Variable '{var_name}' no declarada.")
                     return [None, var_name]
-                return [estructura.symbol_table.get(var_name), var_name]
-        
-        elif operand[0].startswith('t'):  # Temporary variable
-            return [operand[1], operand[0]] 
+                return [tipo, var_name]
+
+        elif operand[0].startswith('t'):  # temporal
+            return [operand[1], operand[0]]
     except Exception as e:
-        print(f"Failed to extract type from operand: {operand}")
+        print(f"Error extrayendo tipo de operando: {operand}")
         raise e
 
 def print_quadruples():
@@ -108,8 +171,13 @@ def print_quadruples():
         print(f"{num:<4} {op:<10} {str(arg1):<12} {str(arg2):<12} {str(res):<12} {tipo_res}")
 
 def print_symbol_table():
-    print("\nTabla de símbolos:")
+    print("\nTabla de símbolos globales:")
     print(f"{'Variable':<10} {'Tipo':<10}")
-    for name, tipo in estructura.symbol_table.items():
-        print(f"{name:<10} {tipo:<10}")
+    for name, var in estructura.func_directory.global_var_table.variables.items():
+        print(f"{name:<10} {var.tipo:<10}")
 
+    print("\nVariables por función:")
+    for func_name, func in estructura.func_directory.functions.items():
+        print(f"\nFunción: {func_name}")
+        for name, var in func.var_table.variables.items():
+            print(f"  {name:<10} {var.tipo:<10}")

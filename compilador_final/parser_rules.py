@@ -5,8 +5,9 @@ from lexer import tokens
 
 def p_programa(p):
     'Programa : KEYWORD_PROGRAM ID SEMICOLON vars_opt funcs_opt KEYWORD_MAIN LBRACE body RBRACE KEYWORD_END SEMICOLON'
+    # Switch back to global scope for main
+    estructura.current_function = 'global'
     p[0] = ('Programa', [p[2], p[4], p[5], p[6], p[8], 'end', ';'])
-
 def p_vars_opt(p):
     '''vars_opt : vars_opt VARS
                 | VARS
@@ -24,13 +25,13 @@ def p_VARS(p):
     var_type = p[2][1]['type'][1][0]
 
     for var_id in ids:
-        if var_id in estructura.symbol_table:
-            print(f"Error de semántica: Variable '{var_id}' ya declarada.")
+        if estructura.func_directory.has_variable(estructura.current_function, var_id):
+            estructura.semantic_errors.append(
+                f"Variable '{var_id}' ya declarada en función '{estructura.current_function}'."
+            )
         else:
-            estructura.symbol_table[var_id] = var_type
-
+            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function)
     p[0] = ('VARS', p[2])
-
 
 def p_var_list(p):
     '''var_list : ID id_list COLON type'''
@@ -55,40 +56,74 @@ def p_funcs_opt(p):
     '''funcs_opt : funcs_opt FUNCS
                  | FUNCS
                  | empty'''
-    if p[1] is not None:
+    if len(p) == 3:  # funcs_opt FUNCS
+        p[0] = ('funcs_opt', [p[1], p[2]])
+    elif len(p) == 2 and p[1] != 'empty':  # single FUNCS
         p[0] = ('funcs_opt', [p[1]])
-    else:
+    else:  # empty
         p[0] = ('funcs_opt', [])
 
 def p_FUNCS(p):
-    'FUNCS : KEYWORD_VOID ID LPAREN parametros_opt RPAREN LBRACKET vars_opt body RBRACKET SEMICOLON'
+    'FUNCS : KEYWORD_VOID ID func_start LPAREN parametros_opt RPAREN LBRACKET vars_opt body RBRACKET func_end SEMICOLON'
     func_name = p[2]
-    # Create the entry *before* vars_opt gets processed
-    estructura.func_directory[func_name] = {
-        'params': p[4],
-        'vars': {},   # vars_opt will populate this while current_function is set
-        'body': p[8], # actual body
-    }
+    params = p[5]
+    vars_local = p[8]
+    body = p[9]
+    
+    p[0] = ('FUNCS', [func_name, params, vars_local, body])
 
-    current_function = None  # reset AFTER body is parsed
+def p_func_start(p):
+    'func_start :'
+    # Get the function name from the parser stack
+    # p[-1] refers to the ID token that was just parsed
+    func_name = p[-1]
+    
+    # Add function to directory and switch scope
+    try:
+        estructura.func_directory.add_function(func_name)
+        estructura.current_function = func_name
+    except Exception as e:
+        estructura.semantic_errors.append(str(e))
 
-    p[0] = ('FUNCS', [func_name, p[4], p[7], p[8]])
+def p_func_end(p):
+    'func_end :'
+    # Switch back to global scope when function ends
+    estructura.current_function = 'global'
 
 def p_parametros_opt(p):
     '''parametros_opt : parametros
                       | empty'''
-    p[0] = ('parametros_opt', [p[1]])
+    if p[1] == 'empty' or p[1] is None:
+        p[0] = ('parametros_opt', [])
+    else:
+        p[0] = ('parametros_opt', [p[1]])
 
 def p_parametros(p):
     '''parametros : ID COLON type param_list'''
-    p[0] = ('parametros', [('ID', p[1]), p[3]] + p[4])
+    # Collect the first parameter
+    # First parameter
+    all_params = [(p[1], p[3][1][0])]  # e.g., ('a', 'int')
+    # Additional parameters from param_list
+    for param in p[4]:
+        all_params.append((param[0], param[1][1][0]))  # (ID, 'type')
+
+    # Declare each parameter as a variable
+    for var_id, var_type in all_params:
+        if estructura.func_directory.has_variable(estructura.current_function, var_id):
+            estructura.semantic_errors.append(
+                f"Parametro '{var_id}' ya declarado en función '{estructura.current_function}'."
+            )
+        else:
+            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function)  
+
+    p[0] = ('parametros', all_params)
 
 def p_param_list(p):
     '''param_list : COMMA ID COLON type param_list
                   | empty'''
-    if len(p) == 6:
+    if len(p) == 6:  # COMMA ID COLON type param_list
         p[0] = [('ID', p[2]), p[4]] + p[5]
-    else:
+    else:  # empty
         p[0] = []
 
 def p_body(p):
@@ -118,24 +153,30 @@ def p_statement(p):
 
 def p_assign(p):
     'assign : ID ASSIGN_SIGN expresion SEMICOLON'
+    
+    if not estructura.stack_operandos:
+        estructura.semantic_errors.append("Error: No hay operando para asignación.")
+        return
+        
     valor, tipo = estructura.stack_operandos.pop()
-
     var_name = p[1]
-    if var_name not in estructura.symbol_table:
-        estructura.semantic_errors.append(f"Error de semantica: Variable '{var_name}' no declarada.")
+
+    # Check if variable exists
+    if estructura.func_directory.has_variable(estructura.current_function, var_name):
+        tipo_variable = estructura.func_directory.get_variable_type(var_name, estructura.current_function)
+    else:
+        estructura.semantic_errors.append(f"Variable '{var_name}' no declarada.")
         return
 
-    #Checar compatibilidad tipo
-    tipo_variable = estructura.symbol_table[var_name]
+    # Type compatibility check
     if tipo != tipo_variable:
-        estructura.semantic_errors.append(f"Error de Mismatch: No se puede asignar tipo {tipo} a variable '{var_name}' de tipo {tipo_variable}.")
+        estructura.semantic_errors.append(f"Error de tipos: No se puede asignar {tipo} a {tipo_variable}.")
         return
     
-    #añadir a cuadruplos y stack
+    # Generate quadruple
     estructura.linea += 1
     estructura.cuadruplos.append((estructura.linea, '=', valor, None, var_name))
-    estructura.stack_operandos.append((var_name, tipo_variable))
-
+    
     p[0] = ('assign', [('ID', var_name), p[3]])
 
 def p_print(p):
@@ -154,7 +195,7 @@ def p_print_item(p):
     '''print_item : expresion
                   | CTE_STRING'''
     if isinstance(p[1], tuple):
-        p[0] = ('print_item', [p[1]])
+        p[0] = ('i ', [p[1]])
     else:
         p[0] = ('print_item', [('CTE_STRING', p[1])])
 
@@ -190,7 +231,7 @@ def p_condition(p):
             estructura.cuadruplos[salto_final_else][3],
             estructura.linea + 1
         )
-    p[0] = ('condition', [p[1], p[3], p[6], p[7]])
+    p[0] = ('condition', [p[1], p[3], p[7], p[9]])
 
 def p_cuadr_if(p):
     'cuadr_if :'
@@ -204,7 +245,7 @@ def p_cuadr_if(p):
 
 def p_else_arg(p):
     'else_arg : KEYWORD_ELSE cuadr_else LBRACE body RBRACE'
-    p[0] = [p[1], p[3]]
+    p[0] = [p[1], p[4]]
 
 def p_cuadr_else(p):
     'cuadr_else :'
@@ -219,7 +260,7 @@ def p_cuadr_else(p):
             estructura.cuadruplos[gotof_index][1],
             estructura.cuadruplos[gotof_index][2],
             estructura.cuadruplos[gotof_index][3],
-            estructura.linea + 1  # Inicio del else
+            estructura.linea + 1 
         )
         estructura.stack_saltos.append(goto_final_index)
     else:
@@ -241,7 +282,6 @@ def p_f_call(p):
     'f_call : ID LPAREN expresion_list_opt RPAREN SEMICOLON'
     func_name = p[1]
     args = p[3]  # lista de expresiones
-
     # verificar que exsiste la funcion
     if func_name not in estructura.func_dir:
         estructura.semantic_errors.append(f"Funcion '{func_name}' no esta declarada.")
@@ -285,29 +325,29 @@ def p_expresion(p):
     '''expresion : exp comparador exp
                  | exp'''
     if len(p) == 4:
-        left = p[1]
-        op = p[2][1][0]  # p[2] = ('comparador', [<operator>])
-        right = p[3]
+        # Comparison operation - existing logic is mostly correct
+        if len(estructura.stack_operandos) < 2:
+            estructura.semantic_errors.append("Error: Operandos insuficientes para comparación.")
+            return
+            
+        right_val, right_type = estructura.stack_operandos.pop()
+        left_val, left_type = estructura.stack_operandos.pop()
+        op = p[2][1][0]
 
-        tipo1, value1 = get_operand_and_type(left)
-        tipo2, value2 = get_operand_and_type(right)
-
-        if tipo1 is None or tipo2 is None:
-         estructura.semantic_errors.append(f"Unknown tipos: {tipo1}, {tipo2} — left={left}, right={right}")
-
-        resultado_tipo = estructura.cubo.get((tipo1, tipo2, op))
-
+        resultado_tipo = estructura.cubo.get((left_type, right_type, op))
         if resultado_tipo is None:
-            estructura.semantic_errors.append(f"No se puede hacer operación de comparación {tipo1} {op} {tipo2}")
+            estructura.semantic_errors.append(f"Operación inválida: {left_type} {op} {right_type}")
+            return
 
         temp_var = estructura.new_temp()
         estructura.stack_operandos.append((temp_var, resultado_tipo))
-
+        
         estructura.linea += 1
-        estructura.cuadruplos.append((estructura.linea, op, value1, value2, temp_var))
-
-        p[0] = (temp_var, resultado_tipo)
+        estructura.cuadruplos.append((estructura.linea, op, left_val, right_val, temp_var))
+        
+        p[0] = ('expresion', [p[1], p[2], p[3]])
     else:
+        # Single expression - pass through
         p[0] = p[1]
 
 def p_comparador(p):
@@ -383,26 +423,47 @@ def p_factor(p):
               | OP_SUM varcte
               | OP_SUB varcte
               | varcte'''
-    if len(p) == 4:
-        p[0] = ('factor', [p[2]])
-    elif len(p) == 3:
-        p[0] = ('factor', [p[1], p[2]])
-    else:
-        p[0] = ('factor', [p[1]])
+    if len(p) == 4:  # Parentheses
+        p[0] = p[2]  # Pass through the expression result
+    elif len(p) == 3:  # Unary + or -
+        if not estructura.stack_operandos:
+            estructura.semantic_errors.append("Error: No hay operando para operación unaria.")
+            return
+            
+        valor, tipo = estructura.stack_operandos.pop()
+        
+        if p[1] == '-':
+            # Generate unary minus quadruple
+            temp_var = estructura.new_temp()
+            estructura.linea += 1
+            estructura.cuadruplos.append((estructura.linea, 'UMINUS', valor, None, temp_var))
+            estructura.stack_operandos.append((temp_var, tipo))
+            p[0] = ('factor', [p[1], p[2]])
+        else:  # Unary plus - no operation needed
+            estructura.stack_operandos.append((valor, tipo))
+            p[0] = ('factor', [p[2]])
+    else:  # Single varcte
+        p[0] = p[1]
 
 def p_varcte(p):
     '''varcte : ID
               | CTE_INT
               | CTE_FLOAT'''
     if p.slice[1].type == 'ID':
+        var_name = p[1]
+        # Look up variable type in symbol table
+        if estructura.func_directory.has_variable(estructura.current_function, var_name):
+            var_type = estructura.func_directory.get_variable_type(var_name, estructura.current_function)
+            estructura.stack_operandos.append((var_name, var_type))
+        else:
+            estructura.semantic_errors.append(f"Variable '{var_name}' no declarada.")
+            estructura.stack_operandos.append((var_name, 'error'))
         p[0] = ('varcte', [('ID', p[1])])
-
-        # Para semántica, el tipo se consulta en la tabla de símbolos
     elif p.slice[1].type == 'CTE_INT':
-        estructura.stack_operandos.append([p[1], 'int'])
+        estructura.stack_operandos.append((p[1], 'int'))
         p[0] = ('varcte', [('CTE_INT', p[1])])
     elif p.slice[1].type == 'CTE_FLOAT':
-        estructura.stack_operandos.append([p[1], 'float'])
+        estructura.stack_operandos.append((p[1], 'float'))
         p[0] = ('varcte', [('CTE_FLOAT', p[1])])
 
 #agregar cte int y float separado
@@ -414,22 +475,15 @@ def p_CTE_FLOAT(p):
     'CTE: CTE_FLOAT'
     estructura.stack_operandos.append([p[1],'float'])
 '''
-
 def p_empty(p):
-    'empty :'
-    p[0] = ('empty', [])
+    '''empty :'''
+    p[0] = None
 
 def p_error(p):
     if p:
-        # If the unexpected token is not a semicolon, maybe missing a semicolon before?
         msg = f"Error de sintaxis: token inesperado '{p.value}' en línea {p.lineno}"
         syntax_errors.append(msg)
-
-        # Skip tokens until next semicolon or EOF to try to recover
-        while True:
-            tok = parser.token()
-            if not tok or tok.type == 'SEMICOLON':
-                break
+        # Skip the problematic token
         parser.errok()
     else:
         syntax_errors.append("Error de sintaxis: fin de archivo inesperado")

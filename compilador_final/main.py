@@ -4,16 +4,20 @@ from utils import print_tree
 from semantic import estructura, print_quadruples, print_symbol_table
 
 # Crear archivo ld
-input_text = """
-program mayor_numero;
-
+input_text = """program mayor_numero;
 var x, y, z, mayor : int;
+
+
+void title(a:int)[
+    var b : int;
+    a=b;
+];
+
 
 main {
     x = 10;
     y = 25;
     z = 15;
-
     if(x > y) {
         if (x > z) {
             mayor = x;
