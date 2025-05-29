@@ -1,13 +1,31 @@
+program mayor_numero;
+var x, y, z, mayor : int;
 
-program celsius_to_fahrenheit;
 
-var celsius, fahrenheit, temp: float;
+void title(a:int)[
+    var b : int;
+    a=b;
+];
 
-main{
-	celsius = 30.0;
-	temp = (celsius * 1.8)
-    	fahrenheit = temp + 32;
-	print("Temperatura en Fahrenheit: ");
-	print(fahrenheit);
+
+main {
+    x = 10;
+    y = 25;
+    z = 15;
+    if(x > y) {
+        if (x > z) {
+            mayor = x;
+        } else {
+            mayor = z;
+        };
+    } else {
+        if (y > z) {
+            mayor = y;
+        } else {
+            mayor = z;
+        };
+    };
+    title(x);
+    print(mayor);
 }
 end;

@@ -319,7 +319,7 @@ def p_f_call(p):
     estructura.stack_saltos.append(return_address) 
     
     func_start_quad = estructura.func_directory.get_start_line(func_name)
-    estructura.line += 1
+    estructura.linea += 1
     estructura.cuadruplos.append((estructura.linea, 'GOTO', func_name, None, func_start_quad))
     
     p[0] = ('f_call', {
