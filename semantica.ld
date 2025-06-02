@@ -16,15 +16,15 @@ void fact (n : int, a : int)
 ];
  
  
-#void some_other( n : int )
-#[  var n : float
-#   {  #n = "woooooooooo 5"; 
-#      print("hello "); 
-     # xf = 7;
+void some_other( n : int )
+[  var n : float
+   {  n = "woooooooooo 5"; 
+      print("hello "); 
+      xf = 7;
  
-     # fact(3, 5.8);
-#   } 
-#];
+      fact(3, 5.8);
+   } 
+];
  
  
 main 
