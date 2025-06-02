@@ -8,6 +8,7 @@ def p_programa(p):
     # Switch back to global scope for main
     estructura.current_function = 'global'
     p[0] = ('Programa', [p[2], p[4], p[5], p[6], p[8], 'end', ';'])
+
 def p_vars_opt(p):
     '''vars_opt : vars_opt VARS
                 | VARS
@@ -92,66 +93,102 @@ def p_func_end(p):
     # Switch back to global scope when function ends
     estructura.current_function = 'global'
 
+
 def p_parametros_opt(p):
     '''parametros_opt : parametros
                       | empty'''
     if p[1] == 'empty' or p[1] is None:
         p[0] = ('parametros_opt', [])
     else:
-        p[0] = ('parametros_opt', [p[1]])
+        p[0] = ('parametros_opt', p[1])
+
+
 
 def p_parametros(p):
-    '''parametros : ID COLON type param_list'''
-    # Collect the first parameter
-    # First parameter
-    all_params = [(p[1], p[3][1][0])]  # e.g., ('a', 'int')
-    # Additional parameters from param_list
-    for param in p[4]:
-        all_params.append((param[0], param[1][1][0]))  # (ID, 'type')
-
-    # Declare each parameter as a variable
-    for var_id, var_type in all_params:
+    '''parametros : ID COLON type COMMA parametros
+                  | ID COLON type'''
+    
+    if len(p) == 6:  # ID COLON type COMMA parametros
+        var_id = p[1]
+        var_type = p[3][1][0] if isinstance(p[3], tuple) else p[3]
+        
+        # Declare current parameter
         if estructura.func_directory.has_variable(estructura.current_function, var_id):
             estructura.semantic_errors.append(
                 f"Parametro '{var_id}' ya declarado en función '{estructura.current_function}'."
             )
         else:
-            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param = True)  
-
+            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param=True)
+        
+        # Get remaining parameters
+        rest_params = p[5][1] if isinstance(p[5], tuple) and len(p[5]) > 1 else []
+        all_params = [(var_id, var_type)] + rest_params
+        
+    else:  # ID COLON type (last parameter)
+        var_id = p[1]
+        var_type = p[3][1][0] if isinstance(p[3], tuple) else p[3]
+        
+        # Declare parameter
+        if estructura.func_directory.has_variable(estructura.current_function, var_id):
+            estructura.semantic_errors.append(
+                f"Parametro '{var_id}' ya declarado en función '{estructura.current_function}'."
+            )
+        else:
+            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param=True)
+        
+        all_params = [(var_id, var_type)]
+    
     p[0] = ('parametros', all_params)
 
 def p_param_list(p):
-    '''param_list : COMMA ID COLON type param_list
+    '''param_list : ID COLON type COMMA param_list
                   | empty'''
-    if len(p) == 6:  # COMMA ID COLON type param_list
-        p[0] = [('ID', p[2]), p[4]] + p[5]
+
+    if len(p) == 6:  # ID COLON type COMMA param_list
+        # Get parameters from the rest of the list
+        rest_params = p[5] if p[5] else []
+        
+        # Add current parameter to the beginning
+        current_param = (p[1], p[3][1][0])  # (ID, type)
+        all_params = [current_param] + rest_params
+        
+        # DO NOT declare parameters here - just collect them
+        p[0] = all_params
     else:  # empty
         p[0] = []
 
 def p_body(p):
     'body : statement_list'
-    p[0] = ('body', [p[1]])
+    p[0] = ('body', p[1])
 
+# Debug version to see what types you're getting:
 def p_statement_list(p):
     '''statement_list : statement statement_list
                       | statement
                       | empty'''
-    if len(p) == 3:
-        p[0] = [p[1]] + p[2]
+    if len(p) == 3:  # statement statement_list
+        if p[2] is None:
+            p[0] = [p[1]]
+        elif isinstance(p[2], list):
+            p[0] = [p[1]] + p[2]
+        elif isinstance(p[2], tuple):
+            p[0] = [p[1]] + [p[2]]
+        else:
+            p[0] = [p[1]]
+            
     elif len(p) == 2:
-        # Could be a single statement or empty
-        if p[1] is None:  # empty production returns None
+        if p[1] is None:  # empty production
             p[0] = []
         else:
             p[0] = [p[1]]
-
+    
 def p_statement(p):
     '''statement : assign
                  | condition
                  | cycle
                  | f_call
                  | print'''
-    p[0] = ('statement', [p[1]])
+    p[0] = ('statement', p[1])
 
 def p_assign(p):
     'assign : ID ASSIGN_SIGN expresion SEMICOLON'
@@ -292,32 +329,35 @@ def p_else_arg_empty(p):
             estructura.linea + 1
         )
 
-def p_f_call(p):
+def p_f_call_simple(p):
     'f_call : ID LPAREN expresion_list_opt RPAREN SEMICOLON'
     func_name = p[1]
-    args = (p[3])[1][0][1]  # lista de expresiones
-    # verificar que exsiste la funcion
-    if estructura.func_directory.function_exsist(func_name) == False:
+    
+    # Get expression list
+    if isinstance(p[3], tuple) and len(p[3]) > 1:
+        expr_list = p[3][1]
+    else:
+        expr_list = []
+    
+    # For each expression, pop from operand stack
+    args = []
+    for _ in range(len(expr_list)):
+        if estructura.stack_operandos:
+            operand, op_type = estructura.stack_operandos.pop()
+            args.insert(0, (operand, op_type))  # Insert at beginning to maintain order
+        
+    # Rest of your validation logic...
+    if not estructura.func_directory.function_exsist(func_name):
         estructura.semantic_errors.append(f"Funcion '{func_name}' no esta declarada.")
+        return
 
     expected_params = estructura.func_directory.get_func_param(func_name)
-    # validar cuantos argumentos se esperan
+    
     if len(args) != len(expected_params):
         estructura.semantic_errors.append(f"Funcion '{func_name}' necesita {len(expected_params)} argumentos, pero recibió {len(args)}.")
+        return
 
-    # validar tipos
-    for i in range(len(expected_params)):
-        param_name, expected_type = expected_params[i]
-        arg = args[i][1]
-        arg_type = estructura.func_directory.get_variable_type(arg, estructura.current_function)
-
-        if arg_type != expected_type:
-            estructura.semantic_errors.append(f"Error semantico de tipos en argumento {i+1} de la funcion '{func_name}'. Se esperaba '{expected_type}', y recibió '{arg_type}'.")
-    
-    #TODO: Preguntar como usar esto enla tabla
-    return_address = estructura.linea + 2  
-    estructura.stack_saltos.append(return_address) 
-    
+    # Generate quadruple
     func_start_quad = estructura.func_directory.get_start_line(func_name)
     estructura.linea += 1
     estructura.cuadruplos.append((estructura.linea, 'GOTO', func_name, None, func_start_quad))
@@ -335,11 +375,14 @@ def p_expresion_list_opt(p):
 def p_expresion_list(p):
     '''expresion_list : expresion_list COMMA expresion
                       | expresion'''
-    if len(p) == 4:
-        p[0] = p[1] + [p[3]]
-    else:
+    if len(p) == 4:  # expresion_list COMMA expresion        
+        if isinstance(p[1], list):
+            p[0] = p[1] + [p[3]]
+        else:
+            p[0] = [p[1], p[3]]
+    else:  # single expresion
         p[0] = [p[1]]
-
+    
 def p_expresion(p):
     '''expresion : exp comparador exp
                  | exp'''
@@ -387,8 +430,9 @@ def p_exp(p):
         op = p[2]
         right = p[3]
 
-        tipo1, value1 = get_operand_and_type(left)
-        tipo2, value2 = get_operand_and_type(right)
+        value2, tipo2 = estructura.stack_operandos.pop()
+        value1, tipo1 = estructura.stack_operandos.pop()
+
         if tipo1 is None or tipo2 is None:
             estructura.cuadruplos.append(f"Unknown operand types: {tipo1}, {tipo2} — left={left}, right={right}")
 
