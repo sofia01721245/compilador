@@ -8,31 +8,33 @@ def p_programa(p):
     # Switch back to global scope for main
     estructura.current_function = 'global'
     p[0] = ('Programa', [p[2], p[4], p[5], p[6], p[8], 'end', ';'])
-
 def p_vars_opt(p):
-    '''vars_opt : vars_opt VARS
-                | VARS
+    '''vars_opt : KEYWORD_VAR var_lines
                 | empty'''
     if len(p) == 3:
-        p[0] = p[1] + [p[2]]
-    elif len(p) == 2 and p[1] != 'empty':
-        p[0] = [p[1]]
+        decls = []
+        for var_decl in p[2]:
+            ids = var_decl[1]['ids']
+            var_type = var_decl[1]['type']
+
+            for var_id in ids:
+                if estructura.func_directory.has_variable(estructura.current_function, var_id):
+                    estructura.semantic_errors.append(
+                        f"Variable '{var_id}' ya declarada en función '{estructura.current_function}'."
+                    )
+                else:
+                    estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param=False)
+        p[0] = ('VARS', p[2])
     else:
         p[0] = []
 
-def p_VARS(p):
-    '''VARS : KEYWORD_VAR var_list SEMICOLON'''
-    ids = p[2][1]['ids']
-    var_type = p[2][1]['type'][1][0]
-
-    for var_id in ids:
-        if estructura.func_directory.has_variable(estructura.current_function, var_id):
-            estructura.semantic_errors.append(
-                f"Variable '{var_id}' ya declarada en función '{estructura.current_function}'."
-            )
-        else:
-            estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param = False)
-    p[0] = ('VARS', p[2])
+def p_var_lines(p):
+    '''var_lines : var_lines var_list SEMICOLON
+                 | var_list SEMICOLON'''
+    if len(p) == 4:
+        p[0] = p[1] + [p[2]]
+    else:
+        p[0] = [p[1]]
 
 def p_var_list(p):
     '''var_list : ID id_list COLON type'''
@@ -51,7 +53,7 @@ def p_type(p):
     '''type : KEYWORD_INT
             | KEYWORD_FLOAT
             | KEYWORD_STRING'''
-    p[0] = ('type', [p[1]])
+    p[0] = p[1]
 
 def p_funcs_opt(p):
     '''funcs_opt : funcs_opt FUNCS
