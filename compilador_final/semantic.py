@@ -204,4 +204,4 @@ def print_symbol_table():
     for func_name, func in estructura.func_directory.functions.items():
         print(f"\nFunción: {func_name}")
         for name, var in func.var_table.variables.items():
-            print(f"  {name:<10} {var.tipo[0]:<10}")
+            print(f"  {name:<10} {var.tipo:<10}")

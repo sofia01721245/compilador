@@ -112,7 +112,7 @@ def p_parametros(p):
     
     if len(p) == 6:  # ID COLON type COMMA parametros
         var_id = p[1]
-        var_type = p[3][1][0] if isinstance(p[3], tuple) else p[3]
+        var_type = p[3][1] if isinstance(p[3], tuple) else p[3]
         
         # Declare current parameter
         if estructura.func_directory.has_variable(estructura.current_function, var_id):
@@ -128,7 +128,7 @@ def p_parametros(p):
         
     else:  # ID COLON type (last parameter)
         var_id = p[1]
-        var_type = p[3][1][0] if isinstance(p[3], tuple) else p[3]
+        var_type = p[3][1] if isinstance(p[3], tuple) else p[3]
         
         # Declare parameter
         if estructura.func_directory.has_variable(estructura.current_function, var_id):
@@ -151,7 +151,7 @@ def p_param_list(p):
         rest_params = p[5] if p[5] else []
         
         # Add current parameter to the beginning
-        current_param = (p[1], p[3][1][0])  # (ID, type)
+        current_param = (p[1], p[3][1])  # (ID, type)
         all_params = [current_param] + rest_params
         
         # DO NOT declare parameters here - just collect them
