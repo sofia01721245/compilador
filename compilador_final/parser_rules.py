@@ -436,12 +436,12 @@ def p_exp(p):
         value1, tipo1 = estructura.stack_operandos.pop()
 
         if tipo1 is None or tipo2 is None:
-            estructura.cuadruplos.append(f"Unknown operand types: {tipo1}, {tipo2} — left={left}, right={right}")
+            estructura.semantic_errors.append(f"Unknown operand types: {tipo1}, {tipo2} — left={left}, right={right}")
 
         resultado_tipo = estructura.cubo.get((tipo1, tipo2, op))
 
         if resultado_tipo is None:
-            estructura.cuadruplos.append(f"No se puede hacer operacion de {tipo1} {op} {tipo2}")
+            estructura.semantic_errors.append(f"No se puede hacer operacion de {tipo1} {op} {tipo2}")
 
         temp_var = estructura.new_temp()
         estructura.stack_operandos.append((temp_var, resultado_tipo))
@@ -465,12 +465,12 @@ def p_termino(p):
         tipo1, value1 = get_operand_and_type(left)
         tipo2, value2 = get_operand_and_type(right)
         if tipo1 is None or tipo2 is None:
-            estructura.cuadruplos.append(f"Unknown types: {tipo1}, {tipo2} — left={left}, right={right}")
+            estructura.semantic_errors.append(f"Unknown types: {tipo1}, {tipo2} — left={left}, right={right}")
 
         resultado_tipo = estructura.cubo.get((tipo1, tipo2, op))
 
         if resultado_tipo is None:
-            estructura.cuadruplos.append(f"No se puede hacer operacion de {tipo1} {op} {tipo2}")
+            estructura.semantic_errors.append(f"No se puede hacer operacion de {tipo1} {op} {tipo2}")
 
         temp_var = estructura.new_temp()
         estructura.stack_operandos.append((temp_var, resultado_tipo))
@@ -501,7 +501,7 @@ def p_factor(p):
             # Generate unary minus quadruple
             temp_var = estructura.new_temp()
             estructura.linea += 1
-            estructura.cuadruplos.append((estructura.linea, 'UMINUS', valor, None, temp_var))
+            estructura.cuadruplos.append((estructura.linea, 'UMINUS', valor, None, temp_var)) #agregar cuatruplo porque estamos cambiando el valor a negativo
             estructura.stack_operandos.append((temp_var, tipo))
             p[0] = ('factor', [p[1], p[2]])
         else:  # Unary plus - no operation needed
