@@ -2,6 +2,7 @@ from lexer import PlyTokenizer
 from parser_rules import parser, syntax_errors
 from utils import print_tree
 from semantic import estructura, print_quadruples, print_symbol_table
+from vm import convert_quadruples_to_test, test_interpreter
 
 # Crear archivo ld
 input_text = """program proquacks;
@@ -12,13 +13,13 @@ var n : int ;
 void fact (n : int, a : int)
 [  var b : int;
  
-   {  if (n > 1 )
+    if (n > 1 )
       {  b = a * n;
          fact (n-1, b);  
       }
       else
       {  print(a);   }; 
-   }
+
 ];
  
  
@@ -41,7 +42,13 @@ main
  
     do {
       print(3, "w", 4);
-    }while( 3  );
+    }while( 3 <7 );
+ 
+    if ( 3 >= 8)
+    {
+      print("texto ");
+      n = 58 + 9 * 5;
+    };
  
 print("texto ");
 n = 58 + 9 * 5;
@@ -71,6 +78,12 @@ print_tree(parse_tree)
 print(estructura.stack_operandos)
 print_quadruples()
 print_symbol_table()
+
+test = (convert_quadruples_to_test(estructura.cuadruplos))
+
+print(test)
+
+test_interpreter(test)
 
 if tokenizer.errors:
     print("\n--- ERRORES DE LEXICO DETECTADOS ---")

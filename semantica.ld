@@ -6,13 +6,13 @@ var n : int ;
 void fact (n : int, a : int)
 [  var b : int;
  
-   {  if (n > 1 )
+    if (n > 1 )
       {  b = a * n;
          fact (n-1, b);  
       }
       else
       {  print(a);   }; 
-   }
+
 ];
  
  
@@ -35,7 +35,13 @@ main
  
     do {
       print(3, "w", 4);
-    }while( 3  );
+    }while( 3 <7 );
+ 
+    if ( 3 >= 8)
+    {
+      print("texto ");
+      n = 58 + 9 * 5;
+    };
  
 print("texto ");
 n = 58 + 9 * 5;

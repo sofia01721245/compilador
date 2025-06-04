@@ -5,9 +5,27 @@ from lexer import tokens
 
 def p_programa(p):
     'Programa : KEYWORD_PROGRAM ID SEMICOLON vars_opt funcs_opt KEYWORD_MAIN LBRACE body RBRACE KEYWORD_END SEMICOLON'
+    
+    # Generate GOTOMAIN quadruple BEFORE parsing the main body
+    # This should be the first quadruple (or close to it)
+    main_start_quad = estructura.linea + 1  # Next quadruple will be main's first instruction
+    
+    # Insert GOTOMAIN at the beginning of the quadruple list
+    estructura.cuadruplos.insert(0, (1, 'gotomain', -1, -1, main_start_quad + 1))
+    
+    # Update all existing quadruple line numbers since we inserted at position 0
+    for i in range(1, len(estructura.cuadruplos)):
+        old_quad = estructura.cuadruplos[i]
+        estructura.cuadruplos[i] = (old_quad[0] + 1, old_quad[1], old_quad[2], old_quad[3], 
+                                   old_quad[4] + 1 if isinstance(old_quad[4], int) else old_quad[4])
+    
+    # Update line counter
+    estructura.linea += 1
+    
     # Switch back to global scope for main
     estructura.current_function = 'global'
     p[0] = ('Programa', [p[2], p[4], p[5], p[6], p[8], 'end', ';'])
+
 def p_vars_opt(p):
     '''vars_opt : KEYWORD_VAR var_lines
                 | empty'''
@@ -236,6 +254,38 @@ def p_print(p):
     
     p[0] = ('print', [p[3]])
 
+def p_print(p):
+    'print : KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON'
+    
+    operands_for_print = []
+    
+    expr_count = 0
+    for item in p[3]:
+        if item[0] == 'expresion':
+            expr_count += 1
+    
+    temp_operands = []
+    for _ in range(expr_count):
+        if estructura.stack_operandos:
+            temp_operands.append(estructura.stack_operandos.pop())
+    
+    temp_operands.reverse()
+    operand_index = 0
+    
+    for item in p[3]:
+        if item[0] == 'print_item':
+            if item[1][0][0] == 'CTE_STRING':
+                estructura.linea += 1
+                estructura.cuadruplos.append((estructura.linea, 'PRINT', item[1][0][1], None, None))
+        else:  # expresion
+            if operand_index < len(temp_operands):
+                operand, _ = temp_operands[operand_index]
+                operand_index += 1
+                estructura.linea += 1
+                estructura.cuadruplos.append((estructura.linea, 'PRINT', operand, None, None))
+    
+    p[0] = ('print', [p[3]])
+
 def p_print_items(p):
     '''print_items : print_items COMMA print_item
                    | print_item'''
@@ -252,25 +302,34 @@ def p_print_item(p):
     else:
         p[0] = ('print_item', [('CTE_STRING', p[1])])
 
+
 def p_cycle(p):
-    'cycle : KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON'
-    
-    start_line = estructura.linea + 1 - len(p[2])
+    'cycle : KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON'
 
     if not estructura.stack_operandos:
         estructura.semantic_errors.append("Error de semantica: No hay expresión para condición del ciclo.")
         return
-    
+
     valor, tipo = estructura.stack_operandos.pop()
     if tipo != 'bool':
         estructura.semantic_errors.append(f"Error de semantica: La condición del ciclo debe ser booleana en línea {estructura.linea + 1}")
         return
 
-    # GOTOT para regresar al inicio del ciclo si la condición es verdadera
+    if estructura.stack_saltos:
+        start_line = estructura.stack_saltos.pop() #startline del ciclo do while 
+    else:
+        estructura.semantic_errors.append("Error de semantica: No se encontró el inicio del ciclo.")
+        return
+
+    # Generar GOTOT para regresar al do
     estructura.linea += 1
     estructura.cuadruplos.append((estructura.linea, 'GOTOT', valor, None, start_line))
 
-    p[0] = ('cycle', [p[2], ('condition', p[5])])
+    p[0] = ('cycle', [p[4], ('expresion', p[8])])
+
+def p_cuadr_do(p):
+    'cuadr_do :'
+    estructura.stack_saltos.append(estructura.linea + 1)
 
 
 def p_condition(p):
@@ -285,6 +344,8 @@ def p_condition(p):
             estructura.linea + 1
         )
     p[0] = ('condition', [p[1], p[3], p[7], p[9]])
+    print(p[0])
+    print(p[5])
 
 def p_cuadr_if(p):
     'cuadr_if :'
@@ -531,15 +592,7 @@ def p_varcte(p):
         estructura.stack_operandos.append((p[1], 'float'))
         p[0] = ('varcte', [('CTE_FLOAT', p[1])])
 
-#agregar cte int y float separado
-'''def p_CTE_INT(p): 
-    'CTE: CTE_INT'
-    estructura.stack_operandos.append([p[1],'int'])
 
-def p_CTE_FLOAT(p): 
-    'CTE: CTE_FLOAT'
-    estructura.stack_operandos.append([p[1],'float'])
-'''
 def p_empty(p):
     '''empty :'''
     p[0] = None

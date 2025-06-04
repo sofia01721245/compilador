@@ -1,221 +1,250 @@
-# Virtual Machine for your compiler
-# Import your existing modules
-from semantic import estructura
+def convert_quadruples_to_test(cuads):
+    # Memory address ranges for different types
+    CONST_INT_START = 17000
+    CONST_FLOAT_START = 17100
+    CONST_STR_START = 17200
+    
+    # Track constants and their addresses
+    constants_map = {}
+    const_int_counter = CONST_INT_START
+    const_float_counter = CONST_FLOAT_START
+    const_str_counter = CONST_STR_START
+    
+    memory_map = {}
+    next_address = 1000
 
-class VirtualMachine:
-    def __init__(self, estructura_obj):
-        self.estructura = estructura_obj
-        self.memo = {}
-        self.call_stack = []  # For function calls
-        self.current_scope = 'global'
+    def get_addr(name):
+        nonlocal next_address, const_int_counter, const_float_counter, const_str_counter
         
-    def get_value(self, key):
-        """Get value from memory, handling different data types"""
-        if key is None or key == "None":
-            return None
+        if name in (None, 'None', '-', -1):
+            return -1
             
-        if isinstance(key, str):
-            # First check if it's in memory (variable)
-            if key in self.memo:
-                return self.memo[key]
-            # Check if it's a numeric literal
-            elif key.lstrip('-').isdigit():
-                return int(key)
-            elif self.is_float_string(key):
-                return float(key)
-            # Check if it's a string literal (enclosed in quotes or unquoted string)
-            elif key.startswith('"') and key.endswith('"'):
-                return key[1:-1]  # Remove quotes
-            else:
-                # It's either a string literal or unknown variable
-                return key
-        return key
-    
-    def is_float_string(self, s):
-        """Check if string represents a float"""
-        try:
-            float(s)
-            return '.' in s or 'e' in s.lower()
-        except ValueError:
-            return False
-    
-    def set_value(self, key, value):
-        """Set value in memory"""
-        if key is not None and key != "None":
-            self.memo[str(key)] = value
-    
-    def initialize_memory(self):
-        """Initialize memory from symbol table"""
-        print("=== INITIALIZING VIRTUAL MACHINE ===")
-        
-        # Initialize global variables
-        print("Global variables:")
-        for name, var in self.estructura.func_directory.global_var_table.variables.items():
-            if var.tipo == 'int':
-                self.memo[name] = 0
-            elif var.tipo == 'float':
-                self.memo[name] = 0.0
-            elif var.tipo == 'string':
-                self.memo[name] = ""
-            elif var.tipo == 'bool':
-                self.memo[name] = False
-            print(f"  {name}: {self.memo[name]} ({var.tipo})")
-        
-        # Store function start addresses
-        print("\nFunction addresses:")
-        for func_name, func in self.estructura.func_directory.functions.items():
-            self.memo[func_name] = func.start_quad
-            print(f"  {func_name}: starts at quadruple {func.start_quad}")
-    
-    def find_quadruple_index(self, line_number):
-        """Find the index of a quadruple with given line number"""
-        for i, quad in enumerate(self.estructura.cuadruplos):
-            if len(quad) >= 1 and str(quad[0]) == str(line_number):
-                return i
-        return -1
-    
-    def execute(self):
-        """Execute the quadruples"""
-        self.initialize_memory()
-        
-        print("\n=== STARTING EXECUTION ===")
-        cuadruplos = self.estructura.cuadruplos
-        
-        if not cuadruplos:
-            print("No quadruples to execute!")
-            return
-        
-        indx = 0
-        execution_count = 0
-        max_executions = 1000  # Prevent infinite loops during debugging
-        
-        while indx < len(cuadruplos) and execution_count < max_executions:
-            execution_count += 1
-            quad = cuadruplos[indx]
+        # Handle integer literals - assign them to constants section
+        if isinstance(name, int) or (isinstance(name, str) and name.isdigit()):
+            const_key = str(name)
+            if const_key not in constants_map:
+                constants_map[const_key] = const_int_counter
+                const_int_counter += 1
+            return str(constants_map[const_key])
             
-            # Handle both 5 and 6 element tuples
-            if len(quad) == 6:
-                num, op, arg1, arg2, res, type_info = quad
-            elif len(quad) == 5: 
-                num, op, arg1, arg2, res = quad
-                type_info = "-"
+        if isinstance(name, float) or (isinstance(name, str) and '.' in name and name.replace('.', '').isdigit()):
+            const_key = str(name)
+            if const_key not in constants_map:
+                constants_map[const_key] = const_float_counter
+                const_float_counter += 1
+            return str(constants_map[const_key])
+        
+        # para temps
+        if name not in memory_map:
+            memory_map[name] = next_address
+            next_address += 1
+        return str(memory_map[name])
+
+    for quad in cuads:
+        if len(quad) == 6:
+            num, op, arg1, arg2, dest, type_info = quad
+        else:
+            num, op, arg1, arg2, dest = quad
+        
+        get_addr(arg1)
+        get_addr(arg2)
+        get_addr(dest)
+
+    memory_regions = {
+        'global_int': 2,
+        'global_float': 1,
+        'global_str': 0,
+        'global_void': 0,
+        'local_int': 0,
+        'local_float': 0,
+        'local_str': 0,
+        'temp_int': 0,
+        'temp_float': 2,
+        'temp_bool': 0,
+        'cte_int': len([k for k in constants_map.keys() if '.' not in k]),  # Count integer constants
+        'cte_float': len([k for k in constants_map.keys() if '.' in k]),    # Count float constants
+        'cte_str': 0,
+    }
+
+    constants_lines = []
+    for const_val, addr in sorted(constants_map.items(), key=lambda x: x[1]):
+        constants_lines.append(f"{const_val} {addr}")
+
+    memory_lines = [f"{k} {v}" for k, v in memory_regions.items()]
+
+    cuad_lines = []
+    for quad in cuads:
+        if len(quad) == 6:
+            num, op, arg1, arg2, dest, type_info = quad
+        else:
+            num, op, arg1, arg2, dest = quad
+        
+        op_name = op.lower() # estandarizar
+        
+        op1 = get_addr(arg1)
+        op2 = get_addr(arg2)
+        dst = get_addr(dest)
+        
+        cuad_lines.append(f"{num} {op_name} {op1} {op2} {dst}")
+
+    sections = []
+    
+    if constants_lines:
+        sections.append("\n".join(constants_lines))
+    
+    sections.append("\n".join(memory_lines))
+    sections.append("\n".join(cuad_lines))
+    
+    return "\n".join(sections)
+
+"""ejemplo 
+7 17000
+3 17001
+2 17002
+global_int 2
+global_float 1
+global_str 0
+global_void 0
+local_int 0
+local_float 0
+local_str 0
+temp_int 0
+temp_float 2
+temp_bool 0
+cte_int 3
+cte_float 0
+cte_str 0
+1 gotomain -1 -1 2
+2 = 17000 -1 1000
+3 = 17001 -1 1001
+4 / 1000 1001 13000
+5 + 13000 17002 13001
+6 = 13001 -1 2001
+7 print 2001 -1 -1
+8 println -1 -1 -1
+9 print 2001 -1 -1
+10 print 2001 -1 -1
+11 println -1 -1 -1
+12 print 17001 -1 -1
+13 println -1 -1 -1
+"""
+
+class Cuadruplo:
+    def __init__(self, data):
+        if len(data) == 5:
+            self.numero = data[0]
+            self.operador = data[1]
+            self.argIzq = data[2]
+            self.argDer = data[3]
+            self.destino = data[4]
+        else:
+            # Handle dummy cuadruplo or other formats
+            self.numero = -1
+            self.operador = ""
+            self.argIzq = -1
+            self.argDer = -1
+            self.destino = -1
+
+def execute_quadruples(quadruple_string):
+    test_split = quadruple_string.strip().split('\n')
+    memo = {}
+    cuads = [Cuadruplo([-1, -1, -1, -1, -1])]
+    section = 0
+    allocation_log = []  
+    for l in test_split:
+        if l.strip() == "":
+            section += 1
+            continue
+
+        linea = l.strip().split()
+
+        if section == 0 and len(linea) == 2:
+            try:
+                dir = int(linea[1])
+                if dir < 18000:
+                    memo[linea[1]] = int(linea[0])
+                elif dir < 19000:
+                    memo[linea[1]] = float(linea[0])
+                else:
+                    memo[linea[1]] = linea[0]
+            except ValueError:
+                continue
+
+        elif section == 1 and len(linea) == 2:
+            continue
+
+        elif section == 2 and len(linea) == 5:
+            cuads.append(Cuadruplo(linea))
+
+    indx = 1
+    while indx < len(cuads):
+        quad = cuads[indx]
+        op = quad.operador
+        dst = str(quad.destino)
+
+        def log(value):
+            if dst != '-1':
+                allocation_log.append((dst, value))
+                memo[dst] = value
+
+        if op == 'gotomain':
+            indx = int(quad.destino)
+        elif op == '=':
+            log(memo[str(quad.argIzq)])
+            indx += 1
+        elif op == '/':
+            log(memo[str(quad.argIzq)] / memo[str(quad.argDer)])
+            indx += 1
+        elif op == '+':
+            log(memo[str(quad.argIzq)] + memo[str(quad.argDer)])
+            indx += 1
+        elif op == '*':
+            log(memo[str(quad.argIzq)] * memo[str(quad.argDer)])
+            indx += 1
+        elif op == '-':
+            log(memo[str(quad.argIzq)] - memo[str(quad.argDer)])
+            indx += 1
+        elif op == '>':
+            log(memo[str(quad.argIzq)] > memo[str(quad.argDer)])
+            indx += 1
+        elif op == '<':
+            log(memo[str(quad.argIzq)] < memo[str(quad.argDer)])
+            indx += 1
+        elif op == '>=':
+            log(memo[str(quad.argIzq)] >= memo[str(quad.argDer)])
+            indx += 1
+        elif op == '<=':
+            log(memo[str(quad.argIzq)] <= memo[str(quad.argDer)])
+            indx += 1
+        elif op == '==':
+            log(memo[str(quad.argIzq)] == memo[str(quad.argDer)])
+            indx += 1
+        elif op == '!=':
+            log(memo[str(quad.argIzq)] != memo[str(quad.argDer)])
+            indx += 1
+        elif op == 'gotof':
+            if not memo[str(quad.argIzq)]:
+                indx = int(quad.destino)
             else:
                 indx += 1
-                continue
-            
-            print(f"Executing quad {num}: {op} {arg1} {arg2} -> {res}")
-            
-            if op == 'gotomain':
-                target_line = res
-                target_index = self.find_quadruple_index(target_line)
-                if target_index != -1:
-                    indx = target_index
-                    continue
-                else:
-                    print(f"Warning: Could not find quadruple {target_line}")
-                    indx += 1
-                    
-            elif op == '=':
-                left_val = self.get_value(arg1)
-                self.set_value(res, left_val)
-                print(f"  Assigned {left_val} to {res}")
-                
-            elif op in ['+', '-', '*', '/', '>', '<', '>=', '<=', '==', '!=']:
-                left_val = self.get_value(arg1)
-                right_val = self.get_value(arg2)
-                
-                if op == '+':
-                    result = left_val + right_val
-                elif op == '-':
-                    result = left_val - right_val
-                elif op == '*':
-                    result = left_val * right_val
-                elif op == '/':
-                    if right_val != 0:
-                        result = left_val / right_val
-                    else:
-                        print("Error: Division by zero!")
-                        result = 0
-                elif op == '>':
-                    result = left_val > right_val
-                elif op == '<':
-                    result = left_val < right_val
-                elif op == '>=':
-                    result = left_val >= right_val
-                elif op == '<=':
-                    result = left_val <= right_val
-                elif op == '==':
-                    result = left_val == right_val
-                elif op == '!=':
-                    result = left_val != right_val
-                
-                self.set_value(res, result)
-                print(f"  {left_val} {op} {right_val} = {result}")
-                
-            elif op == 'PRINT' or op == 'print':
-                value = self.get_value(arg1)
-                print(f"OUTPUT: {value}", end=" ")
-                
-            elif op == 'println':
-                print()  # New line
-                
-            elif op == 'GOTO':
-                if arg1 and arg1 != "None":
-                    target = self.get_value(arg1)
-                    target_index = self.find_quadruple_index(target)
-                else:
-                    target_index = self.find_quadruple_index(res)
-                
-                if target_index != -1:
-                    indx = target_index
-                    continue
-                else:
-                    print(f"Warning: Could not find target quadruple")
-                    
-            elif op == 'GOTOF':
-                condition = self.get_value(arg1)
-                if not condition:  # If condition is false
-                    target_index = self.find_quadruple_index(res)
-                    if target_index != -1:
-                        indx = target_index
-                        continue
-                        
-            elif op == 'GOTOT':
-                condition = self.get_value(arg1)
-                if condition:  # If condition is true
-                    target_index = self.find_quadruple_index(res)
-                    if target_index != -1:
-                        indx = target_index
-                        continue
-            else:
-                print(f"  Unknown operation: {op}")
-            
+        elif op == 'goto':
+            indx = int(quad.destino)
+        elif op == 'print':
+            print(memo[str(quad.argIzq)], end=" ")
             indx += 1
-        
-        if execution_count >= max_executions:
-            print(f"\nExecution stopped after {max_executions} steps (possible infinite loop)")
-        
-        print(f"\n=== EXECUTION COMPLETED ({execution_count} steps) ===")
-        self.print_final_state()
+        elif op == 'println':
+            print()
+            indx += 1
+        else:
+            print(f"Unknown operation: {op}")
+            indx += 1
+
+    return memo, allocation_log
+
+def test_interpreter(test_quadruples):    
+    final_memory, allocations = execute_quadruples(test_quadruples)
     
-    def print_final_state(self):
-        """Print final memory state"""
-        print("\nFinal memory state:")
-        for key, value in self.memo.items():
-            if not key.startswith('t'):  # Don't show temporary variables
-                print(f"  {key}: {value}")
-
-# To use this VM with your main code, add this at the end of your main:
-def run_virtual_machine():
-    if not estructura.semantic_errors:
-        print("\n" + "="*50)
-        print("RUNNING VIRTUAL MACHINE")
-        print("="*50)
-        
-        vm = VirtualMachine(estructura)
-        vm.execute()
-    else:
-        print("\nCannot run VM due to semantic errors.")
-
-# Uncomment this line in your main to run the VM:
-# run_virtual_machine()
+    print(f"\nFinal memory state: {final_memory}")
+    print("\nMemory allocations during execution:")
+    for addr, value in allocations:
+        print(f"Address {addr} := {value}")

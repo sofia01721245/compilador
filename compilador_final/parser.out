@@ -41,57 +41,58 @@ Rule 35    print_items -> print_items COMMA print_item
 Rule 36    print_items -> print_item
 Rule 37    print_item -> expresion
 Rule 38    print_item -> CTE_STRING
-Rule 39    cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
-Rule 40    condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-Rule 41    cuadr_if -> <empty>
-Rule 42    else_arg -> KEYWORD_ELSE cuadr_else LBRACE body RBRACE
-Rule 43    cuadr_else -> <empty>
-Rule 44    else_arg -> empty
-Rule 45    f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON
-Rule 46    expresion_list_opt -> expresion_list
-Rule 47    expresion_list_opt -> empty
-Rule 48    expresion_list -> expresion_list COMMA expresion
-Rule 49    expresion_list -> expresion
-Rule 50    expresion -> exp comparador exp
-Rule 51    expresion -> exp
-Rule 52    comparador -> LESS
-Rule 53    comparador -> GREATER
-Rule 54    comparador -> NOT_EQUAL
-Rule 55    comparador -> EQUAL
-Rule 56    comparador -> GREATER_EQUAL
-Rule 57    comparador -> LESS_EQUAL
-Rule 58    exp -> exp OP_SUM termino
-Rule 59    exp -> exp OP_SUB termino
-Rule 60    exp -> termino
-Rule 61    termino -> termino OP_MUL factor
-Rule 62    termino -> termino OP_DIV factor
-Rule 63    termino -> factor
-Rule 64    factor -> LPAREN expresion RPAREN
-Rule 65    factor -> OP_SUM varcte
-Rule 66    factor -> OP_SUB varcte
-Rule 67    factor -> varcte
-Rule 68    varcte -> ID
-Rule 69    varcte -> CTE_INT
-Rule 70    varcte -> CTE_FLOAT
-Rule 71    empty -> <empty>
+Rule 39    cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+Rule 40    cuadr_do -> <empty>
+Rule 41    condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+Rule 42    cuadr_if -> <empty>
+Rule 43    else_arg -> KEYWORD_ELSE cuadr_else LBRACE body RBRACE
+Rule 44    cuadr_else -> <empty>
+Rule 45    else_arg -> empty
+Rule 46    f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON
+Rule 47    expresion_list_opt -> expresion_list
+Rule 48    expresion_list_opt -> empty
+Rule 49    expresion_list -> expresion_list COMMA expresion
+Rule 50    expresion_list -> expresion
+Rule 51    expresion -> exp comparador exp
+Rule 52    expresion -> exp
+Rule 53    comparador -> LESS
+Rule 54    comparador -> GREATER
+Rule 55    comparador -> NOT_EQUAL
+Rule 56    comparador -> EQUAL
+Rule 57    comparador -> GREATER_EQUAL
+Rule 58    comparador -> LESS_EQUAL
+Rule 59    exp -> exp OP_SUM termino
+Rule 60    exp -> exp OP_SUB termino
+Rule 61    exp -> termino
+Rule 62    termino -> termino OP_MUL factor
+Rule 63    termino -> termino OP_DIV factor
+Rule 64    termino -> factor
+Rule 65    factor -> LPAREN expresion RPAREN
+Rule 66    factor -> OP_SUM varcte
+Rule 67    factor -> OP_SUB varcte
+Rule 68    factor -> varcte
+Rule 69    varcte -> ID
+Rule 70    varcte -> CTE_INT
+Rule 71    varcte -> CTE_FLOAT
+Rule 72    empty -> <empty>
 
 Terminals, with rules where they appear
 
 ASSIGN_SIGN          : 33
 COLON                : 6 20 21 22
-COMMA                : 7 20 22 35 48
-CTE_FLOAT            : 70
-CTE_INT              : 69
+COMMA                : 7 20 22 35 49
+CTE_FLOAT            : 71
+CTE_INT              : 70
 CTE_STRING           : 38
-EQUAL                : 55
-GREATER              : 53
-GREATER_EQUAL        : 56
-ID                   : 1 6 7 15 20 21 22 33 45 68
+EQUAL                : 56
+GREATER              : 54
+GREATER_EQUAL        : 57
+ID                   : 1 6 7 15 20 21 22 33 46 69
 KEYWORD_DO           : 39
-KEYWORD_ELSE         : 42
+KEYWORD_ELSE         : 43
 KEYWORD_END          : 1
 KEYWORD_FLOAT        : 10
-KEYWORD_IF           : 40
+KEYWORD_IF           : 41
 KEYWORD_INT          : 9
 KEYWORD_MAIN         : 1
 KEYWORD_PRINT        : 34
@@ -100,20 +101,20 @@ KEYWORD_STRING       : 11
 KEYWORD_VAR          : 2
 KEYWORD_VOID         : 15
 KEYWORD_WHILE        : 39
-LBRACE               : 1 39 40 42
+LBRACE               : 1 39 41 43
 LBRACKET             : 15
-LESS                 : 52
-LESS_EQUAL           : 57
-LPAREN               : 15 34 39 40 45 64
-NOT_EQUAL            : 54
-OP_DIV               : 62
-OP_MUL               : 61
-OP_SUB               : 59 66
-OP_SUM               : 58 65
-RBRACE               : 1 39 40 42
+LESS                 : 53
+LESS_EQUAL           : 58
+LPAREN               : 15 34 39 41 46 65
+NOT_EQUAL            : 55
+OP_DIV               : 63
+OP_MUL               : 62
+OP_SUB               : 60 67
+OP_SUM               : 59 66
+RBRACE               : 1 39 41 43
 RBRACKET             : 15
-RPAREN               : 15 34 39 40 45 64
-SEMICOLON            : 1 1 4 5 15 33 34 39 40 45
+RPAREN               : 15 34 39 41 46 65
+SEMICOLON            : 1 1 4 5 15 33 34 39 41 46
 error                : 
 
 Nonterminals, with rules where they appear
@@ -121,20 +122,21 @@ Nonterminals, with rules where they appear
 FUNCS                : 12 13
 Programa             : 0
 assign               : 28
-body                 : 1 15 39 40 42
-comparador           : 50
+body                 : 1 15 39 41 43
+comparador           : 51
 condition            : 29
-cuadr_else           : 42
-cuadr_if             : 40
+cuadr_do             : 39
+cuadr_else           : 43
+cuadr_if             : 41
 cycle                : 30
-else_arg             : 40
-empty                : 3 8 14 19 23 27 44 47
-exp                  : 50 50 51 58 59
-expresion            : 33 37 39 40 48 49 64
-expresion_list       : 46 48
-expresion_list_opt   : 45
+else_arg             : 41
+empty                : 3 8 14 19 23 27 45 48
+exp                  : 51 51 52 59 60
+expresion            : 33 37 39 41 49 50 65
+expresion_list       : 47 49
+expresion_list_opt   : 46
 f_call               : 31
-factor               : 61 62 63
+factor               : 62 63 64
 func_end             : 15
 func_start           : 15
 funcs_opt            : 1 12
@@ -147,11 +149,11 @@ print_item           : 35 36
 print_items          : 34 35
 statement            : 25 26
 statement_list       : 24 25
-termino              : 58 59 60 61 62
+termino              : 59 60 61 62 63
 type                 : 6 20 21 22
 var_lines            : 2 4
 var_list             : 4 5
-varcte               : 65 66 67
+varcte               : 66 67 68
 vars_opt             : 1 15
 
 Parsing method: LALR
@@ -190,11 +192,11 @@ state 4
     (1) Programa -> KEYWORD_PROGRAM ID SEMICOLON . vars_opt funcs_opt KEYWORD_MAIN LBRACE body RBRACE KEYWORD_END SEMICOLON
     (2) vars_opt -> . KEYWORD_VAR var_lines
     (3) vars_opt -> . empty
-    (71) empty -> .
+    (72) empty -> .
 
     KEYWORD_VAR     shift and go to state 6
-    KEYWORD_VOID    reduce using rule 71 (empty -> .)
-    KEYWORD_MAIN    reduce using rule 71 (empty -> .)
+    KEYWORD_VOID    reduce using rule 72 (empty -> .)
+    KEYWORD_MAIN    reduce using rule 72 (empty -> .)
 
     vars_opt                       shift and go to state 5
     empty                          shift and go to state 7
@@ -206,13 +208,13 @@ state 5
     (13) funcs_opt -> . FUNCS
     (14) funcs_opt -> . empty
     (15) FUNCS -> . KEYWORD_VOID ID func_start LPAREN parametros_opt RPAREN LBRACKET vars_opt body RBRACKET func_end SEMICOLON
-    (71) empty -> .
+    (72) empty -> .
 
   ! shift/reduce conflict for KEYWORD_VOID resolved as shift
     KEYWORD_VOID    shift and go to state 11
-    KEYWORD_MAIN    reduce using rule 71 (empty -> .)
+    KEYWORD_MAIN    reduce using rule 72 (empty -> .)
 
-  ! KEYWORD_VOID    [ reduce using rule 71 (empty -> .) ]
+  ! KEYWORD_VOID    [ reduce using rule 72 (empty -> .) ]
 
     funcs_opt                      shift and go to state 8
     FUNCS                          shift and go to state 9
@@ -308,10 +310,10 @@ state 14
     (6) var_list -> ID . id_list COLON type
     (7) id_list -> . COMMA ID id_list
     (8) id_list -> . empty
-    (71) empty -> .
+    (72) empty -> .
 
     COMMA           shift and go to state 21
-    COLON           reduce using rule 71 (empty -> .)
+    COLON           reduce using rule 72 (empty -> .)
 
     id_list                        shift and go to state 20
     empty                          shift and go to state 22
@@ -393,14 +395,14 @@ state 23
     (30) statement -> . cycle
     (31) statement -> . f_call
     (32) statement -> . print
-    (71) empty -> .
+    (72) empty -> .
     (33) assign -> . ID ASSIGN_SIGN expresion SEMICOLON
-    (40) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-    (39) cycle -> . KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
-    (45) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
+    (41) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (39) cycle -> . KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (46) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
     (34) print -> . KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON
 
-    RBRACE          reduce using rule 71 (empty -> .)
+    RBRACE          reduce using rule 72 (empty -> .)
     ID              shift and go to state 28
     KEYWORD_IF      shift and go to state 38
     KEYWORD_DO      shift and go to state 39
@@ -454,10 +456,10 @@ state 27
     (7) id_list -> COMMA ID . id_list
     (7) id_list -> . COMMA ID id_list
     (8) id_list -> . empty
-    (71) empty -> .
+    (72) empty -> .
 
     COMMA           shift and go to state 21
-    COLON           reduce using rule 71 (empty -> .)
+    COLON           reduce using rule 72 (empty -> .)
 
     id_list                        shift and go to state 46
     empty                          shift and go to state 22
@@ -465,7 +467,7 @@ state 27
 state 28
 
     (33) assign -> ID . ASSIGN_SIGN expresion SEMICOLON
-    (45) f_call -> ID . LPAREN expresion_list_opt RPAREN SEMICOLON
+    (46) f_call -> ID . LPAREN expresion_list_opt RPAREN SEMICOLON
 
     ASSIGN_SIGN     shift and go to state 47
     LPAREN          shift and go to state 48
@@ -498,11 +500,11 @@ state 31
     (30) statement -> . cycle
     (31) statement -> . f_call
     (32) statement -> . print
-    (71) empty -> .
+    (72) empty -> .
     (33) assign -> . ID ASSIGN_SIGN expresion SEMICOLON
-    (40) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-    (39) cycle -> . KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
-    (45) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
+    (41) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (39) cycle -> . KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (46) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
     (34) print -> . KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON
 
   ! reduce/reduce conflict for RBRACE resolved using rule 26 (statement_list -> statement .)
@@ -514,8 +516,8 @@ state 31
     KEYWORD_DO      shift and go to state 39
     KEYWORD_PRINT   shift and go to state 40
 
-  ! RBRACE          [ reduce using rule 71 (empty -> .) ]
-  ! RBRACKET        [ reduce using rule 71 (empty -> .) ]
+  ! RBRACE          [ reduce using rule 72 (empty -> .) ]
+  ! RBRACKET        [ reduce using rule 72 (empty -> .) ]
 
     statement                      shift and go to state 31
     statement_list                 shift and go to state 50
@@ -596,17 +598,19 @@ state 37
 
 state 38
 
-    (40) condition -> KEYWORD_IF . LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (41) condition -> KEYWORD_IF . LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
 
     LPAREN          shift and go to state 51
 
 
 state 39
 
-    (39) cycle -> KEYWORD_DO . LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (39) cycle -> KEYWORD_DO . cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (40) cuadr_do -> .
 
-    LBRACE          shift and go to state 52
+    LBRACE          reduce using rule 40 (cuadr_do -> .)
 
+    cuadr_do                       shift and go to state 52
 
 state 40
 
@@ -622,10 +626,10 @@ state 41
     (19) parametros_opt -> . empty
     (20) parametros -> . ID COLON type COMMA parametros
     (21) parametros -> . ID COLON type
-    (71) empty -> .
+    (72) empty -> .
 
     ID              shift and go to state 54
-    RPAREN          reduce using rule 71 (empty -> .)
+    RPAREN          reduce using rule 72 (empty -> .)
 
     parametros_opt                 shift and go to state 55
     parametros                     shift and go to state 56
@@ -675,21 +679,21 @@ state 46
 state 47
 
     (33) assign -> ID ASSIGN_SIGN . expresion SEMICOLON
-    (50) expresion -> . exp comparador exp
-    (51) expresion -> . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (51) expresion -> . exp comparador exp
+    (52) expresion -> . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -706,29 +710,29 @@ state 47
 
 state 48
 
-    (45) f_call -> ID LPAREN . expresion_list_opt RPAREN SEMICOLON
-    (46) expresion_list_opt -> . expresion_list
-    (47) expresion_list_opt -> . empty
-    (48) expresion_list -> . expresion_list COMMA expresion
-    (49) expresion_list -> . expresion
-    (71) empty -> .
-    (50) expresion -> . exp comparador exp
-    (51) expresion -> . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (46) f_call -> ID LPAREN . expresion_list_opt RPAREN SEMICOLON
+    (47) expresion_list_opt -> . expresion_list
+    (48) expresion_list_opt -> . empty
+    (49) expresion_list -> . expresion_list COMMA expresion
+    (50) expresion_list -> . expresion
+    (72) empty -> .
+    (51) expresion -> . exp comparador exp
+    (52) expresion -> . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
-    RPAREN          reduce using rule 71 (empty -> .)
+    RPAREN          reduce using rule 72 (empty -> .)
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
     OP_SUB          shift and go to state 63
@@ -762,22 +766,22 @@ state 50
 
 state 51
 
-    (40) condition -> KEYWORD_IF LPAREN . expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-    (50) expresion -> . exp comparador exp
-    (51) expresion -> . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (41) condition -> KEYWORD_IF LPAREN . expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (51) expresion -> . exp comparador exp
+    (52) expresion -> . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -794,38 +798,10 @@ state 51
 
 state 52
 
-    (39) cycle -> KEYWORD_DO LBRACE . body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
-    (24) body -> . statement_list
-    (25) statement_list -> . statement statement_list
-    (26) statement_list -> . statement
-    (27) statement_list -> . empty
-    (28) statement -> . assign
-    (29) statement -> . condition
-    (30) statement -> . cycle
-    (31) statement -> . f_call
-    (32) statement -> . print
-    (71) empty -> .
-    (33) assign -> . ID ASSIGN_SIGN expresion SEMICOLON
-    (40) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-    (39) cycle -> . KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
-    (45) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
-    (34) print -> . KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON
+    (39) cycle -> KEYWORD_DO cuadr_do . LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
 
-    RBRACE          reduce using rule 71 (empty -> .)
-    ID              shift and go to state 28
-    KEYWORD_IF      shift and go to state 38
-    KEYWORD_DO      shift and go to state 39
-    KEYWORD_PRINT   shift and go to state 40
+    LBRACE          shift and go to state 75
 
-    body                           shift and go to state 75
-    statement_list                 shift and go to state 30
-    statement                      shift and go to state 31
-    empty                          shift and go to state 32
-    assign                         shift and go to state 33
-    condition                      shift and go to state 34
-    cycle                          shift and go to state 35
-    f_call                         shift and go to state 36
-    print                          shift and go to state 37
 
 state 53
 
@@ -834,21 +810,21 @@ state 53
     (36) print_items -> . print_item
     (37) print_item -> . expresion
     (38) print_item -> . CTE_STRING
-    (50) expresion -> . exp comparador exp
-    (51) expresion -> . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (51) expresion -> . exp comparador exp
+    (52) expresion -> . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     CTE_STRING      shift and go to state 79
     LPAREN          shift and go to state 65
@@ -897,21 +873,21 @@ state 57
 
 state 58
 
-    (68) varcte -> ID .
+    (69) varcte -> ID .
 
-    OP_MUL          reduce using rule 68 (varcte -> ID .)
-    OP_DIV          reduce using rule 68 (varcte -> ID .)
-    OP_SUM          reduce using rule 68 (varcte -> ID .)
-    OP_SUB          reduce using rule 68 (varcte -> ID .)
-    LESS            reduce using rule 68 (varcte -> ID .)
-    GREATER         reduce using rule 68 (varcte -> ID .)
-    NOT_EQUAL       reduce using rule 68 (varcte -> ID .)
-    EQUAL           reduce using rule 68 (varcte -> ID .)
-    GREATER_EQUAL   reduce using rule 68 (varcte -> ID .)
-    LESS_EQUAL      reduce using rule 68 (varcte -> ID .)
-    SEMICOLON       reduce using rule 68 (varcte -> ID .)
-    COMMA           reduce using rule 68 (varcte -> ID .)
-    RPAREN          reduce using rule 68 (varcte -> ID .)
+    OP_MUL          reduce using rule 69 (varcte -> ID .)
+    OP_DIV          reduce using rule 69 (varcte -> ID .)
+    OP_SUM          reduce using rule 69 (varcte -> ID .)
+    OP_SUB          reduce using rule 69 (varcte -> ID .)
+    LESS            reduce using rule 69 (varcte -> ID .)
+    GREATER         reduce using rule 69 (varcte -> ID .)
+    NOT_EQUAL       reduce using rule 69 (varcte -> ID .)
+    EQUAL           reduce using rule 69 (varcte -> ID .)
+    GREATER_EQUAL   reduce using rule 69 (varcte -> ID .)
+    LESS_EQUAL      reduce using rule 69 (varcte -> ID .)
+    SEMICOLON       reduce using rule 69 (varcte -> ID .)
+    COMMA           reduce using rule 69 (varcte -> ID .)
+    RPAREN          reduce using rule 69 (varcte -> ID .)
 
 
 state 59
@@ -923,20 +899,20 @@ state 59
 
 state 60
 
-    (50) expresion -> exp . comparador exp
-    (51) expresion -> exp .
-    (58) exp -> exp . OP_SUM termino
-    (59) exp -> exp . OP_SUB termino
-    (52) comparador -> . LESS
-    (53) comparador -> . GREATER
-    (54) comparador -> . NOT_EQUAL
-    (55) comparador -> . EQUAL
-    (56) comparador -> . GREATER_EQUAL
-    (57) comparador -> . LESS_EQUAL
+    (51) expresion -> exp . comparador exp
+    (52) expresion -> exp .
+    (59) exp -> exp . OP_SUM termino
+    (60) exp -> exp . OP_SUB termino
+    (53) comparador -> . LESS
+    (54) comparador -> . GREATER
+    (55) comparador -> . NOT_EQUAL
+    (56) comparador -> . EQUAL
+    (57) comparador -> . GREATER_EQUAL
+    (58) comparador -> . LESS_EQUAL
 
-    SEMICOLON       reduce using rule 51 (expresion -> exp .)
-    COMMA           reduce using rule 51 (expresion -> exp .)
-    RPAREN          reduce using rule 51 (expresion -> exp .)
+    SEMICOLON       reduce using rule 52 (expresion -> exp .)
+    COMMA           reduce using rule 52 (expresion -> exp .)
+    RPAREN          reduce using rule 52 (expresion -> exp .)
     OP_SUM          shift and go to state 84
     OP_SUB          shift and go to state 85
     LESS            shift and go to state 86
@@ -950,10 +926,10 @@ state 60
 
 state 61
 
-    (65) factor -> OP_SUM . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (66) factor -> OP_SUM . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     ID              shift and go to state 58
     CTE_INT         shift and go to state 67
@@ -963,31 +939,31 @@ state 61
 
 state 62
 
-    (60) exp -> termino .
-    (61) termino -> termino . OP_MUL factor
-    (62) termino -> termino . OP_DIV factor
+    (61) exp -> termino .
+    (62) termino -> termino . OP_MUL factor
+    (63) termino -> termino . OP_DIV factor
 
-    OP_SUM          reduce using rule 60 (exp -> termino .)
-    OP_SUB          reduce using rule 60 (exp -> termino .)
-    LESS            reduce using rule 60 (exp -> termino .)
-    GREATER         reduce using rule 60 (exp -> termino .)
-    NOT_EQUAL       reduce using rule 60 (exp -> termino .)
-    EQUAL           reduce using rule 60 (exp -> termino .)
-    GREATER_EQUAL   reduce using rule 60 (exp -> termino .)
-    LESS_EQUAL      reduce using rule 60 (exp -> termino .)
-    SEMICOLON       reduce using rule 60 (exp -> termino .)
-    COMMA           reduce using rule 60 (exp -> termino .)
-    RPAREN          reduce using rule 60 (exp -> termino .)
+    OP_SUM          reduce using rule 61 (exp -> termino .)
+    OP_SUB          reduce using rule 61 (exp -> termino .)
+    LESS            reduce using rule 61 (exp -> termino .)
+    GREATER         reduce using rule 61 (exp -> termino .)
+    NOT_EQUAL       reduce using rule 61 (exp -> termino .)
+    EQUAL           reduce using rule 61 (exp -> termino .)
+    GREATER_EQUAL   reduce using rule 61 (exp -> termino .)
+    LESS_EQUAL      reduce using rule 61 (exp -> termino .)
+    SEMICOLON       reduce using rule 61 (exp -> termino .)
+    COMMA           reduce using rule 61 (exp -> termino .)
+    RPAREN          reduce using rule 61 (exp -> termino .)
     OP_MUL          shift and go to state 93
     OP_DIV          shift and go to state 94
 
 
 state 63
 
-    (66) factor -> OP_SUB . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (67) factor -> OP_SUB . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     ID              shift and go to state 58
     CTE_INT         shift and go to state 67
@@ -997,41 +973,41 @@ state 63
 
 state 64
 
-    (63) termino -> factor .
+    (64) termino -> factor .
 
-    OP_MUL          reduce using rule 63 (termino -> factor .)
-    OP_DIV          reduce using rule 63 (termino -> factor .)
-    OP_SUM          reduce using rule 63 (termino -> factor .)
-    OP_SUB          reduce using rule 63 (termino -> factor .)
-    LESS            reduce using rule 63 (termino -> factor .)
-    GREATER         reduce using rule 63 (termino -> factor .)
-    NOT_EQUAL       reduce using rule 63 (termino -> factor .)
-    EQUAL           reduce using rule 63 (termino -> factor .)
-    GREATER_EQUAL   reduce using rule 63 (termino -> factor .)
-    LESS_EQUAL      reduce using rule 63 (termino -> factor .)
-    SEMICOLON       reduce using rule 63 (termino -> factor .)
-    COMMA           reduce using rule 63 (termino -> factor .)
-    RPAREN          reduce using rule 63 (termino -> factor .)
+    OP_MUL          reduce using rule 64 (termino -> factor .)
+    OP_DIV          reduce using rule 64 (termino -> factor .)
+    OP_SUM          reduce using rule 64 (termino -> factor .)
+    OP_SUB          reduce using rule 64 (termino -> factor .)
+    LESS            reduce using rule 64 (termino -> factor .)
+    GREATER         reduce using rule 64 (termino -> factor .)
+    NOT_EQUAL       reduce using rule 64 (termino -> factor .)
+    EQUAL           reduce using rule 64 (termino -> factor .)
+    GREATER_EQUAL   reduce using rule 64 (termino -> factor .)
+    LESS_EQUAL      reduce using rule 64 (termino -> factor .)
+    SEMICOLON       reduce using rule 64 (termino -> factor .)
+    COMMA           reduce using rule 64 (termino -> factor .)
+    RPAREN          reduce using rule 64 (termino -> factor .)
 
 
 state 65
 
-    (64) factor -> LPAREN . expresion RPAREN
-    (50) expresion -> . exp comparador exp
-    (51) expresion -> . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (65) factor -> LPAREN . expresion RPAREN
+    (51) expresion -> . exp comparador exp
+    (52) expresion -> . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -1048,90 +1024,90 @@ state 65
 
 state 66
 
-    (67) factor -> varcte .
+    (68) factor -> varcte .
 
-    OP_MUL          reduce using rule 67 (factor -> varcte .)
-    OP_DIV          reduce using rule 67 (factor -> varcte .)
-    OP_SUM          reduce using rule 67 (factor -> varcte .)
-    OP_SUB          reduce using rule 67 (factor -> varcte .)
-    LESS            reduce using rule 67 (factor -> varcte .)
-    GREATER         reduce using rule 67 (factor -> varcte .)
-    NOT_EQUAL       reduce using rule 67 (factor -> varcte .)
-    EQUAL           reduce using rule 67 (factor -> varcte .)
-    GREATER_EQUAL   reduce using rule 67 (factor -> varcte .)
-    LESS_EQUAL      reduce using rule 67 (factor -> varcte .)
-    SEMICOLON       reduce using rule 67 (factor -> varcte .)
-    COMMA           reduce using rule 67 (factor -> varcte .)
-    RPAREN          reduce using rule 67 (factor -> varcte .)
+    OP_MUL          reduce using rule 68 (factor -> varcte .)
+    OP_DIV          reduce using rule 68 (factor -> varcte .)
+    OP_SUM          reduce using rule 68 (factor -> varcte .)
+    OP_SUB          reduce using rule 68 (factor -> varcte .)
+    LESS            reduce using rule 68 (factor -> varcte .)
+    GREATER         reduce using rule 68 (factor -> varcte .)
+    NOT_EQUAL       reduce using rule 68 (factor -> varcte .)
+    EQUAL           reduce using rule 68 (factor -> varcte .)
+    GREATER_EQUAL   reduce using rule 68 (factor -> varcte .)
+    LESS_EQUAL      reduce using rule 68 (factor -> varcte .)
+    SEMICOLON       reduce using rule 68 (factor -> varcte .)
+    COMMA           reduce using rule 68 (factor -> varcte .)
+    RPAREN          reduce using rule 68 (factor -> varcte .)
 
 
 state 67
 
-    (69) varcte -> CTE_INT .
+    (70) varcte -> CTE_INT .
 
-    OP_MUL          reduce using rule 69 (varcte -> CTE_INT .)
-    OP_DIV          reduce using rule 69 (varcte -> CTE_INT .)
-    OP_SUM          reduce using rule 69 (varcte -> CTE_INT .)
-    OP_SUB          reduce using rule 69 (varcte -> CTE_INT .)
-    LESS            reduce using rule 69 (varcte -> CTE_INT .)
-    GREATER         reduce using rule 69 (varcte -> CTE_INT .)
-    NOT_EQUAL       reduce using rule 69 (varcte -> CTE_INT .)
-    EQUAL           reduce using rule 69 (varcte -> CTE_INT .)
-    GREATER_EQUAL   reduce using rule 69 (varcte -> CTE_INT .)
-    LESS_EQUAL      reduce using rule 69 (varcte -> CTE_INT .)
-    SEMICOLON       reduce using rule 69 (varcte -> CTE_INT .)
-    COMMA           reduce using rule 69 (varcte -> CTE_INT .)
-    RPAREN          reduce using rule 69 (varcte -> CTE_INT .)
+    OP_MUL          reduce using rule 70 (varcte -> CTE_INT .)
+    OP_DIV          reduce using rule 70 (varcte -> CTE_INT .)
+    OP_SUM          reduce using rule 70 (varcte -> CTE_INT .)
+    OP_SUB          reduce using rule 70 (varcte -> CTE_INT .)
+    LESS            reduce using rule 70 (varcte -> CTE_INT .)
+    GREATER         reduce using rule 70 (varcte -> CTE_INT .)
+    NOT_EQUAL       reduce using rule 70 (varcte -> CTE_INT .)
+    EQUAL           reduce using rule 70 (varcte -> CTE_INT .)
+    GREATER_EQUAL   reduce using rule 70 (varcte -> CTE_INT .)
+    LESS_EQUAL      reduce using rule 70 (varcte -> CTE_INT .)
+    SEMICOLON       reduce using rule 70 (varcte -> CTE_INT .)
+    COMMA           reduce using rule 70 (varcte -> CTE_INT .)
+    RPAREN          reduce using rule 70 (varcte -> CTE_INT .)
 
 
 state 68
 
-    (70) varcte -> CTE_FLOAT .
+    (71) varcte -> CTE_FLOAT .
 
-    OP_MUL          reduce using rule 70 (varcte -> CTE_FLOAT .)
-    OP_DIV          reduce using rule 70 (varcte -> CTE_FLOAT .)
-    OP_SUM          reduce using rule 70 (varcte -> CTE_FLOAT .)
-    OP_SUB          reduce using rule 70 (varcte -> CTE_FLOAT .)
-    LESS            reduce using rule 70 (varcte -> CTE_FLOAT .)
-    GREATER         reduce using rule 70 (varcte -> CTE_FLOAT .)
-    NOT_EQUAL       reduce using rule 70 (varcte -> CTE_FLOAT .)
-    EQUAL           reduce using rule 70 (varcte -> CTE_FLOAT .)
-    GREATER_EQUAL   reduce using rule 70 (varcte -> CTE_FLOAT .)
-    LESS_EQUAL      reduce using rule 70 (varcte -> CTE_FLOAT .)
-    SEMICOLON       reduce using rule 70 (varcte -> CTE_FLOAT .)
-    COMMA           reduce using rule 70 (varcte -> CTE_FLOAT .)
-    RPAREN          reduce using rule 70 (varcte -> CTE_FLOAT .)
+    OP_MUL          reduce using rule 71 (varcte -> CTE_FLOAT .)
+    OP_DIV          reduce using rule 71 (varcte -> CTE_FLOAT .)
+    OP_SUM          reduce using rule 71 (varcte -> CTE_FLOAT .)
+    OP_SUB          reduce using rule 71 (varcte -> CTE_FLOAT .)
+    LESS            reduce using rule 71 (varcte -> CTE_FLOAT .)
+    GREATER         reduce using rule 71 (varcte -> CTE_FLOAT .)
+    NOT_EQUAL       reduce using rule 71 (varcte -> CTE_FLOAT .)
+    EQUAL           reduce using rule 71 (varcte -> CTE_FLOAT .)
+    GREATER_EQUAL   reduce using rule 71 (varcte -> CTE_FLOAT .)
+    LESS_EQUAL      reduce using rule 71 (varcte -> CTE_FLOAT .)
+    SEMICOLON       reduce using rule 71 (varcte -> CTE_FLOAT .)
+    COMMA           reduce using rule 71 (varcte -> CTE_FLOAT .)
+    RPAREN          reduce using rule 71 (varcte -> CTE_FLOAT .)
 
 
 state 69
 
-    (45) f_call -> ID LPAREN expresion_list_opt . RPAREN SEMICOLON
+    (46) f_call -> ID LPAREN expresion_list_opt . RPAREN SEMICOLON
 
     RPAREN          shift and go to state 97
 
 
 state 70
 
-    (46) expresion_list_opt -> expresion_list .
-    (48) expresion_list -> expresion_list . COMMA expresion
+    (47) expresion_list_opt -> expresion_list .
+    (49) expresion_list -> expresion_list . COMMA expresion
 
-    RPAREN          reduce using rule 46 (expresion_list_opt -> expresion_list .)
+    RPAREN          reduce using rule 47 (expresion_list_opt -> expresion_list .)
     COMMA           shift and go to state 98
 
 
 state 71
 
-    (47) expresion_list_opt -> empty .
+    (48) expresion_list_opt -> empty .
 
-    RPAREN          reduce using rule 47 (expresion_list_opt -> empty .)
+    RPAREN          reduce using rule 48 (expresion_list_opt -> empty .)
 
 
 state 72
 
-    (49) expresion_list -> expresion .
+    (50) expresion_list -> expresion .
 
-    COMMA           reduce using rule 49 (expresion_list -> expresion .)
-    RPAREN          reduce using rule 49 (expresion_list -> expresion .)
+    COMMA           reduce using rule 50 (expresion_list -> expresion .)
+    RPAREN          reduce using rule 50 (expresion_list -> expresion .)
 
 
 state 73
@@ -1143,17 +1119,45 @@ state 73
 
 state 74
 
-    (40) condition -> KEYWORD_IF LPAREN expresion . RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (41) condition -> KEYWORD_IF LPAREN expresion . RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
 
     RPAREN          shift and go to state 100
 
 
 state 75
 
-    (39) cycle -> KEYWORD_DO LBRACE body . RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (39) cycle -> KEYWORD_DO cuadr_do LBRACE . body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (24) body -> . statement_list
+    (25) statement_list -> . statement statement_list
+    (26) statement_list -> . statement
+    (27) statement_list -> . empty
+    (28) statement -> . assign
+    (29) statement -> . condition
+    (30) statement -> . cycle
+    (31) statement -> . f_call
+    (32) statement -> . print
+    (72) empty -> .
+    (33) assign -> . ID ASSIGN_SIGN expresion SEMICOLON
+    (41) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (39) cycle -> . KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (46) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
+    (34) print -> . KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON
 
-    RBRACE          shift and go to state 101
+    RBRACE          reduce using rule 72 (empty -> .)
+    ID              shift and go to state 28
+    KEYWORD_IF      shift and go to state 38
+    KEYWORD_DO      shift and go to state 39
+    KEYWORD_PRINT   shift and go to state 40
 
+    body                           shift and go to state 101
+    statement_list                 shift and go to state 30
+    statement                      shift and go to state 31
+    empty                          shift and go to state 32
+    assign                         shift and go to state 33
+    condition                      shift and go to state 34
+    cycle                          shift and go to state 35
+    f_call                         shift and go to state 36
+    print                          shift and go to state 37
 
 state 76
 
@@ -1223,20 +1227,20 @@ state 82
 
 state 83
 
-    (50) expresion -> exp comparador . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (51) expresion -> exp comparador . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -1252,17 +1256,17 @@ state 83
 
 state 84
 
-    (58) exp -> exp OP_SUM . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (59) exp -> exp OP_SUM . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -1277,17 +1281,17 @@ state 84
 
 state 85
 
-    (59) exp -> exp OP_SUB . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (60) exp -> exp OP_SUB . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -1302,105 +1306,105 @@ state 85
 
 state 86
 
-    (52) comparador -> LESS .
+    (53) comparador -> LESS .
 
-    LPAREN          reduce using rule 52 (comparador -> LESS .)
-    OP_SUM          reduce using rule 52 (comparador -> LESS .)
-    OP_SUB          reduce using rule 52 (comparador -> LESS .)
-    ID              reduce using rule 52 (comparador -> LESS .)
-    CTE_INT         reduce using rule 52 (comparador -> LESS .)
-    CTE_FLOAT       reduce using rule 52 (comparador -> LESS .)
+    LPAREN          reduce using rule 53 (comparador -> LESS .)
+    OP_SUM          reduce using rule 53 (comparador -> LESS .)
+    OP_SUB          reduce using rule 53 (comparador -> LESS .)
+    ID              reduce using rule 53 (comparador -> LESS .)
+    CTE_INT         reduce using rule 53 (comparador -> LESS .)
+    CTE_FLOAT       reduce using rule 53 (comparador -> LESS .)
 
 
 state 87
 
-    (53) comparador -> GREATER .
+    (54) comparador -> GREATER .
 
-    LPAREN          reduce using rule 53 (comparador -> GREATER .)
-    OP_SUM          reduce using rule 53 (comparador -> GREATER .)
-    OP_SUB          reduce using rule 53 (comparador -> GREATER .)
-    ID              reduce using rule 53 (comparador -> GREATER .)
-    CTE_INT         reduce using rule 53 (comparador -> GREATER .)
-    CTE_FLOAT       reduce using rule 53 (comparador -> GREATER .)
+    LPAREN          reduce using rule 54 (comparador -> GREATER .)
+    OP_SUM          reduce using rule 54 (comparador -> GREATER .)
+    OP_SUB          reduce using rule 54 (comparador -> GREATER .)
+    ID              reduce using rule 54 (comparador -> GREATER .)
+    CTE_INT         reduce using rule 54 (comparador -> GREATER .)
+    CTE_FLOAT       reduce using rule 54 (comparador -> GREATER .)
 
 
 state 88
 
-    (54) comparador -> NOT_EQUAL .
+    (55) comparador -> NOT_EQUAL .
 
-    LPAREN          reduce using rule 54 (comparador -> NOT_EQUAL .)
-    OP_SUM          reduce using rule 54 (comparador -> NOT_EQUAL .)
-    OP_SUB          reduce using rule 54 (comparador -> NOT_EQUAL .)
-    ID              reduce using rule 54 (comparador -> NOT_EQUAL .)
-    CTE_INT         reduce using rule 54 (comparador -> NOT_EQUAL .)
-    CTE_FLOAT       reduce using rule 54 (comparador -> NOT_EQUAL .)
+    LPAREN          reduce using rule 55 (comparador -> NOT_EQUAL .)
+    OP_SUM          reduce using rule 55 (comparador -> NOT_EQUAL .)
+    OP_SUB          reduce using rule 55 (comparador -> NOT_EQUAL .)
+    ID              reduce using rule 55 (comparador -> NOT_EQUAL .)
+    CTE_INT         reduce using rule 55 (comparador -> NOT_EQUAL .)
+    CTE_FLOAT       reduce using rule 55 (comparador -> NOT_EQUAL .)
 
 
 state 89
 
-    (55) comparador -> EQUAL .
+    (56) comparador -> EQUAL .
 
-    LPAREN          reduce using rule 55 (comparador -> EQUAL .)
-    OP_SUM          reduce using rule 55 (comparador -> EQUAL .)
-    OP_SUB          reduce using rule 55 (comparador -> EQUAL .)
-    ID              reduce using rule 55 (comparador -> EQUAL .)
-    CTE_INT         reduce using rule 55 (comparador -> EQUAL .)
-    CTE_FLOAT       reduce using rule 55 (comparador -> EQUAL .)
+    LPAREN          reduce using rule 56 (comparador -> EQUAL .)
+    OP_SUM          reduce using rule 56 (comparador -> EQUAL .)
+    OP_SUB          reduce using rule 56 (comparador -> EQUAL .)
+    ID              reduce using rule 56 (comparador -> EQUAL .)
+    CTE_INT         reduce using rule 56 (comparador -> EQUAL .)
+    CTE_FLOAT       reduce using rule 56 (comparador -> EQUAL .)
 
 
 state 90
 
-    (56) comparador -> GREATER_EQUAL .
+    (57) comparador -> GREATER_EQUAL .
 
-    LPAREN          reduce using rule 56 (comparador -> GREATER_EQUAL .)
-    OP_SUM          reduce using rule 56 (comparador -> GREATER_EQUAL .)
-    OP_SUB          reduce using rule 56 (comparador -> GREATER_EQUAL .)
-    ID              reduce using rule 56 (comparador -> GREATER_EQUAL .)
-    CTE_INT         reduce using rule 56 (comparador -> GREATER_EQUAL .)
-    CTE_FLOAT       reduce using rule 56 (comparador -> GREATER_EQUAL .)
+    LPAREN          reduce using rule 57 (comparador -> GREATER_EQUAL .)
+    OP_SUM          reduce using rule 57 (comparador -> GREATER_EQUAL .)
+    OP_SUB          reduce using rule 57 (comparador -> GREATER_EQUAL .)
+    ID              reduce using rule 57 (comparador -> GREATER_EQUAL .)
+    CTE_INT         reduce using rule 57 (comparador -> GREATER_EQUAL .)
+    CTE_FLOAT       reduce using rule 57 (comparador -> GREATER_EQUAL .)
 
 
 state 91
 
-    (57) comparador -> LESS_EQUAL .
+    (58) comparador -> LESS_EQUAL .
 
-    LPAREN          reduce using rule 57 (comparador -> LESS_EQUAL .)
-    OP_SUM          reduce using rule 57 (comparador -> LESS_EQUAL .)
-    OP_SUB          reduce using rule 57 (comparador -> LESS_EQUAL .)
-    ID              reduce using rule 57 (comparador -> LESS_EQUAL .)
-    CTE_INT         reduce using rule 57 (comparador -> LESS_EQUAL .)
-    CTE_FLOAT       reduce using rule 57 (comparador -> LESS_EQUAL .)
+    LPAREN          reduce using rule 58 (comparador -> LESS_EQUAL .)
+    OP_SUM          reduce using rule 58 (comparador -> LESS_EQUAL .)
+    OP_SUB          reduce using rule 58 (comparador -> LESS_EQUAL .)
+    ID              reduce using rule 58 (comparador -> LESS_EQUAL .)
+    CTE_INT         reduce using rule 58 (comparador -> LESS_EQUAL .)
+    CTE_FLOAT       reduce using rule 58 (comparador -> LESS_EQUAL .)
 
 
 state 92
 
-    (65) factor -> OP_SUM varcte .
+    (66) factor -> OP_SUM varcte .
 
-    OP_MUL          reduce using rule 65 (factor -> OP_SUM varcte .)
-    OP_DIV          reduce using rule 65 (factor -> OP_SUM varcte .)
-    OP_SUM          reduce using rule 65 (factor -> OP_SUM varcte .)
-    OP_SUB          reduce using rule 65 (factor -> OP_SUM varcte .)
-    LESS            reduce using rule 65 (factor -> OP_SUM varcte .)
-    GREATER         reduce using rule 65 (factor -> OP_SUM varcte .)
-    NOT_EQUAL       reduce using rule 65 (factor -> OP_SUM varcte .)
-    EQUAL           reduce using rule 65 (factor -> OP_SUM varcte .)
-    GREATER_EQUAL   reduce using rule 65 (factor -> OP_SUM varcte .)
-    LESS_EQUAL      reduce using rule 65 (factor -> OP_SUM varcte .)
-    SEMICOLON       reduce using rule 65 (factor -> OP_SUM varcte .)
-    COMMA           reduce using rule 65 (factor -> OP_SUM varcte .)
-    RPAREN          reduce using rule 65 (factor -> OP_SUM varcte .)
+    OP_MUL          reduce using rule 66 (factor -> OP_SUM varcte .)
+    OP_DIV          reduce using rule 66 (factor -> OP_SUM varcte .)
+    OP_SUM          reduce using rule 66 (factor -> OP_SUM varcte .)
+    OP_SUB          reduce using rule 66 (factor -> OP_SUM varcte .)
+    LESS            reduce using rule 66 (factor -> OP_SUM varcte .)
+    GREATER         reduce using rule 66 (factor -> OP_SUM varcte .)
+    NOT_EQUAL       reduce using rule 66 (factor -> OP_SUM varcte .)
+    EQUAL           reduce using rule 66 (factor -> OP_SUM varcte .)
+    GREATER_EQUAL   reduce using rule 66 (factor -> OP_SUM varcte .)
+    LESS_EQUAL      reduce using rule 66 (factor -> OP_SUM varcte .)
+    SEMICOLON       reduce using rule 66 (factor -> OP_SUM varcte .)
+    COMMA           reduce using rule 66 (factor -> OP_SUM varcte .)
+    RPAREN          reduce using rule 66 (factor -> OP_SUM varcte .)
 
 
 state 93
 
-    (61) termino -> termino OP_MUL . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (62) termino -> termino OP_MUL . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -1414,14 +1418,14 @@ state 93
 
 state 94
 
-    (62) termino -> termino OP_DIV . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (63) termino -> termino OP_DIV . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -1435,55 +1439,55 @@ state 94
 
 state 95
 
-    (66) factor -> OP_SUB varcte .
+    (67) factor -> OP_SUB varcte .
 
-    OP_MUL          reduce using rule 66 (factor -> OP_SUB varcte .)
-    OP_DIV          reduce using rule 66 (factor -> OP_SUB varcte .)
-    OP_SUM          reduce using rule 66 (factor -> OP_SUB varcte .)
-    OP_SUB          reduce using rule 66 (factor -> OP_SUB varcte .)
-    LESS            reduce using rule 66 (factor -> OP_SUB varcte .)
-    GREATER         reduce using rule 66 (factor -> OP_SUB varcte .)
-    NOT_EQUAL       reduce using rule 66 (factor -> OP_SUB varcte .)
-    EQUAL           reduce using rule 66 (factor -> OP_SUB varcte .)
-    GREATER_EQUAL   reduce using rule 66 (factor -> OP_SUB varcte .)
-    LESS_EQUAL      reduce using rule 66 (factor -> OP_SUB varcte .)
-    SEMICOLON       reduce using rule 66 (factor -> OP_SUB varcte .)
-    COMMA           reduce using rule 66 (factor -> OP_SUB varcte .)
-    RPAREN          reduce using rule 66 (factor -> OP_SUB varcte .)
+    OP_MUL          reduce using rule 67 (factor -> OP_SUB varcte .)
+    OP_DIV          reduce using rule 67 (factor -> OP_SUB varcte .)
+    OP_SUM          reduce using rule 67 (factor -> OP_SUB varcte .)
+    OP_SUB          reduce using rule 67 (factor -> OP_SUB varcte .)
+    LESS            reduce using rule 67 (factor -> OP_SUB varcte .)
+    GREATER         reduce using rule 67 (factor -> OP_SUB varcte .)
+    NOT_EQUAL       reduce using rule 67 (factor -> OP_SUB varcte .)
+    EQUAL           reduce using rule 67 (factor -> OP_SUB varcte .)
+    GREATER_EQUAL   reduce using rule 67 (factor -> OP_SUB varcte .)
+    LESS_EQUAL      reduce using rule 67 (factor -> OP_SUB varcte .)
+    SEMICOLON       reduce using rule 67 (factor -> OP_SUB varcte .)
+    COMMA           reduce using rule 67 (factor -> OP_SUB varcte .)
+    RPAREN          reduce using rule 67 (factor -> OP_SUB varcte .)
 
 
 state 96
 
-    (64) factor -> LPAREN expresion . RPAREN
+    (65) factor -> LPAREN expresion . RPAREN
 
     RPAREN          shift and go to state 111
 
 
 state 97
 
-    (45) f_call -> ID LPAREN expresion_list_opt RPAREN . SEMICOLON
+    (46) f_call -> ID LPAREN expresion_list_opt RPAREN . SEMICOLON
 
     SEMICOLON       shift and go to state 112
 
 
 state 98
 
-    (48) expresion_list -> expresion_list COMMA . expresion
-    (50) expresion -> . exp comparador exp
-    (51) expresion -> . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (49) expresion_list -> expresion_list COMMA . expresion
+    (51) expresion -> . exp comparador exp
+    (52) expresion -> . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     LPAREN          shift and go to state 65
     OP_SUM          shift and go to state 61
@@ -1507,18 +1511,18 @@ state 99
 
 state 100
 
-    (40) condition -> KEYWORD_IF LPAREN expresion RPAREN . cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-    (41) cuadr_if -> .
+    (41) condition -> KEYWORD_IF LPAREN expresion RPAREN . cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (42) cuadr_if -> .
 
-    LBRACE          reduce using rule 41 (cuadr_if -> .)
+    LBRACE          reduce using rule 42 (cuadr_if -> .)
 
     cuadr_if                       shift and go to state 114
 
 state 101
 
-    (39) cycle -> KEYWORD_DO LBRACE body RBRACE . KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (39) cycle -> KEYWORD_DO cuadr_do LBRACE body . RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
 
-    KEYWORD_WHILE   shift and go to state 115
+    RBRACE          shift and go to state 115
 
 
 state 102
@@ -1533,21 +1537,21 @@ state 103
     (35) print_items -> print_items COMMA . print_item
     (37) print_item -> . expresion
     (38) print_item -> . CTE_STRING
-    (50) expresion -> . exp comparador exp
-    (51) expresion -> . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (51) expresion -> . exp comparador exp
+    (52) expresion -> . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
     CTE_STRING      shift and go to state 79
     LPAREN          shift and go to state 65
@@ -1578,162 +1582,162 @@ state 105
     (15) FUNCS -> KEYWORD_VOID ID func_start LPAREN parametros_opt RPAREN LBRACKET . vars_opt body RBRACKET func_end SEMICOLON
     (2) vars_opt -> . KEYWORD_VAR var_lines
     (3) vars_opt -> . empty
-    (71) empty -> .
+    (72) empty -> .
 
     KEYWORD_VAR     shift and go to state 6
-    ID              reduce using rule 71 (empty -> .)
-    KEYWORD_IF      reduce using rule 71 (empty -> .)
-    KEYWORD_DO      reduce using rule 71 (empty -> .)
-    KEYWORD_PRINT   reduce using rule 71 (empty -> .)
-    RBRACKET        reduce using rule 71 (empty -> .)
+    ID              reduce using rule 72 (empty -> .)
+    KEYWORD_IF      reduce using rule 72 (empty -> .)
+    KEYWORD_DO      reduce using rule 72 (empty -> .)
+    KEYWORD_PRINT   reduce using rule 72 (empty -> .)
+    RBRACKET        reduce using rule 72 (empty -> .)
 
     vars_opt                       shift and go to state 119
     empty                          shift and go to state 7
 
 state 106
 
-    (50) expresion -> exp comparador exp .
-    (58) exp -> exp . OP_SUM termino
-    (59) exp -> exp . OP_SUB termino
+    (51) expresion -> exp comparador exp .
+    (59) exp -> exp . OP_SUM termino
+    (60) exp -> exp . OP_SUB termino
 
-    SEMICOLON       reduce using rule 50 (expresion -> exp comparador exp .)
-    COMMA           reduce using rule 50 (expresion -> exp comparador exp .)
-    RPAREN          reduce using rule 50 (expresion -> exp comparador exp .)
+    SEMICOLON       reduce using rule 51 (expresion -> exp comparador exp .)
+    COMMA           reduce using rule 51 (expresion -> exp comparador exp .)
+    RPAREN          reduce using rule 51 (expresion -> exp comparador exp .)
     OP_SUM          shift and go to state 84
     OP_SUB          shift and go to state 85
 
 
 state 107
 
-    (58) exp -> exp OP_SUM termino .
-    (61) termino -> termino . OP_MUL factor
-    (62) termino -> termino . OP_DIV factor
+    (59) exp -> exp OP_SUM termino .
+    (62) termino -> termino . OP_MUL factor
+    (63) termino -> termino . OP_DIV factor
 
-    OP_SUM          reduce using rule 58 (exp -> exp OP_SUM termino .)
-    OP_SUB          reduce using rule 58 (exp -> exp OP_SUM termino .)
-    LESS            reduce using rule 58 (exp -> exp OP_SUM termino .)
-    GREATER         reduce using rule 58 (exp -> exp OP_SUM termino .)
-    NOT_EQUAL       reduce using rule 58 (exp -> exp OP_SUM termino .)
-    EQUAL           reduce using rule 58 (exp -> exp OP_SUM termino .)
-    GREATER_EQUAL   reduce using rule 58 (exp -> exp OP_SUM termino .)
-    LESS_EQUAL      reduce using rule 58 (exp -> exp OP_SUM termino .)
-    SEMICOLON       reduce using rule 58 (exp -> exp OP_SUM termino .)
-    COMMA           reduce using rule 58 (exp -> exp OP_SUM termino .)
-    RPAREN          reduce using rule 58 (exp -> exp OP_SUM termino .)
+    OP_SUM          reduce using rule 59 (exp -> exp OP_SUM termino .)
+    OP_SUB          reduce using rule 59 (exp -> exp OP_SUM termino .)
+    LESS            reduce using rule 59 (exp -> exp OP_SUM termino .)
+    GREATER         reduce using rule 59 (exp -> exp OP_SUM termino .)
+    NOT_EQUAL       reduce using rule 59 (exp -> exp OP_SUM termino .)
+    EQUAL           reduce using rule 59 (exp -> exp OP_SUM termino .)
+    GREATER_EQUAL   reduce using rule 59 (exp -> exp OP_SUM termino .)
+    LESS_EQUAL      reduce using rule 59 (exp -> exp OP_SUM termino .)
+    SEMICOLON       reduce using rule 59 (exp -> exp OP_SUM termino .)
+    COMMA           reduce using rule 59 (exp -> exp OP_SUM termino .)
+    RPAREN          reduce using rule 59 (exp -> exp OP_SUM termino .)
     OP_MUL          shift and go to state 93
     OP_DIV          shift and go to state 94
 
 
 state 108
 
-    (59) exp -> exp OP_SUB termino .
-    (61) termino -> termino . OP_MUL factor
-    (62) termino -> termino . OP_DIV factor
+    (60) exp -> exp OP_SUB termino .
+    (62) termino -> termino . OP_MUL factor
+    (63) termino -> termino . OP_DIV factor
 
-    OP_SUM          reduce using rule 59 (exp -> exp OP_SUB termino .)
-    OP_SUB          reduce using rule 59 (exp -> exp OP_SUB termino .)
-    LESS            reduce using rule 59 (exp -> exp OP_SUB termino .)
-    GREATER         reduce using rule 59 (exp -> exp OP_SUB termino .)
-    NOT_EQUAL       reduce using rule 59 (exp -> exp OP_SUB termino .)
-    EQUAL           reduce using rule 59 (exp -> exp OP_SUB termino .)
-    GREATER_EQUAL   reduce using rule 59 (exp -> exp OP_SUB termino .)
-    LESS_EQUAL      reduce using rule 59 (exp -> exp OP_SUB termino .)
-    SEMICOLON       reduce using rule 59 (exp -> exp OP_SUB termino .)
-    COMMA           reduce using rule 59 (exp -> exp OP_SUB termino .)
-    RPAREN          reduce using rule 59 (exp -> exp OP_SUB termino .)
+    OP_SUM          reduce using rule 60 (exp -> exp OP_SUB termino .)
+    OP_SUB          reduce using rule 60 (exp -> exp OP_SUB termino .)
+    LESS            reduce using rule 60 (exp -> exp OP_SUB termino .)
+    GREATER         reduce using rule 60 (exp -> exp OP_SUB termino .)
+    NOT_EQUAL       reduce using rule 60 (exp -> exp OP_SUB termino .)
+    EQUAL           reduce using rule 60 (exp -> exp OP_SUB termino .)
+    GREATER_EQUAL   reduce using rule 60 (exp -> exp OP_SUB termino .)
+    LESS_EQUAL      reduce using rule 60 (exp -> exp OP_SUB termino .)
+    SEMICOLON       reduce using rule 60 (exp -> exp OP_SUB termino .)
+    COMMA           reduce using rule 60 (exp -> exp OP_SUB termino .)
+    RPAREN          reduce using rule 60 (exp -> exp OP_SUB termino .)
     OP_MUL          shift and go to state 93
     OP_DIV          shift and go to state 94
 
 
 state 109
 
-    (61) termino -> termino OP_MUL factor .
+    (62) termino -> termino OP_MUL factor .
 
-    OP_MUL          reduce using rule 61 (termino -> termino OP_MUL factor .)
-    OP_DIV          reduce using rule 61 (termino -> termino OP_MUL factor .)
-    OP_SUM          reduce using rule 61 (termino -> termino OP_MUL factor .)
-    OP_SUB          reduce using rule 61 (termino -> termino OP_MUL factor .)
-    LESS            reduce using rule 61 (termino -> termino OP_MUL factor .)
-    GREATER         reduce using rule 61 (termino -> termino OP_MUL factor .)
-    NOT_EQUAL       reduce using rule 61 (termino -> termino OP_MUL factor .)
-    EQUAL           reduce using rule 61 (termino -> termino OP_MUL factor .)
-    GREATER_EQUAL   reduce using rule 61 (termino -> termino OP_MUL factor .)
-    LESS_EQUAL      reduce using rule 61 (termino -> termino OP_MUL factor .)
-    SEMICOLON       reduce using rule 61 (termino -> termino OP_MUL factor .)
-    COMMA           reduce using rule 61 (termino -> termino OP_MUL factor .)
-    RPAREN          reduce using rule 61 (termino -> termino OP_MUL factor .)
+    OP_MUL          reduce using rule 62 (termino -> termino OP_MUL factor .)
+    OP_DIV          reduce using rule 62 (termino -> termino OP_MUL factor .)
+    OP_SUM          reduce using rule 62 (termino -> termino OP_MUL factor .)
+    OP_SUB          reduce using rule 62 (termino -> termino OP_MUL factor .)
+    LESS            reduce using rule 62 (termino -> termino OP_MUL factor .)
+    GREATER         reduce using rule 62 (termino -> termino OP_MUL factor .)
+    NOT_EQUAL       reduce using rule 62 (termino -> termino OP_MUL factor .)
+    EQUAL           reduce using rule 62 (termino -> termino OP_MUL factor .)
+    GREATER_EQUAL   reduce using rule 62 (termino -> termino OP_MUL factor .)
+    LESS_EQUAL      reduce using rule 62 (termino -> termino OP_MUL factor .)
+    SEMICOLON       reduce using rule 62 (termino -> termino OP_MUL factor .)
+    COMMA           reduce using rule 62 (termino -> termino OP_MUL factor .)
+    RPAREN          reduce using rule 62 (termino -> termino OP_MUL factor .)
 
 
 state 110
 
-    (62) termino -> termino OP_DIV factor .
+    (63) termino -> termino OP_DIV factor .
 
-    OP_MUL          reduce using rule 62 (termino -> termino OP_DIV factor .)
-    OP_DIV          reduce using rule 62 (termino -> termino OP_DIV factor .)
-    OP_SUM          reduce using rule 62 (termino -> termino OP_DIV factor .)
-    OP_SUB          reduce using rule 62 (termino -> termino OP_DIV factor .)
-    LESS            reduce using rule 62 (termino -> termino OP_DIV factor .)
-    GREATER         reduce using rule 62 (termino -> termino OP_DIV factor .)
-    NOT_EQUAL       reduce using rule 62 (termino -> termino OP_DIV factor .)
-    EQUAL           reduce using rule 62 (termino -> termino OP_DIV factor .)
-    GREATER_EQUAL   reduce using rule 62 (termino -> termino OP_DIV factor .)
-    LESS_EQUAL      reduce using rule 62 (termino -> termino OP_DIV factor .)
-    SEMICOLON       reduce using rule 62 (termino -> termino OP_DIV factor .)
-    COMMA           reduce using rule 62 (termino -> termino OP_DIV factor .)
-    RPAREN          reduce using rule 62 (termino -> termino OP_DIV factor .)
+    OP_MUL          reduce using rule 63 (termino -> termino OP_DIV factor .)
+    OP_DIV          reduce using rule 63 (termino -> termino OP_DIV factor .)
+    OP_SUM          reduce using rule 63 (termino -> termino OP_DIV factor .)
+    OP_SUB          reduce using rule 63 (termino -> termino OP_DIV factor .)
+    LESS            reduce using rule 63 (termino -> termino OP_DIV factor .)
+    GREATER         reduce using rule 63 (termino -> termino OP_DIV factor .)
+    NOT_EQUAL       reduce using rule 63 (termino -> termino OP_DIV factor .)
+    EQUAL           reduce using rule 63 (termino -> termino OP_DIV factor .)
+    GREATER_EQUAL   reduce using rule 63 (termino -> termino OP_DIV factor .)
+    LESS_EQUAL      reduce using rule 63 (termino -> termino OP_DIV factor .)
+    SEMICOLON       reduce using rule 63 (termino -> termino OP_DIV factor .)
+    COMMA           reduce using rule 63 (termino -> termino OP_DIV factor .)
+    RPAREN          reduce using rule 63 (termino -> termino OP_DIV factor .)
 
 
 state 111
 
-    (64) factor -> LPAREN expresion RPAREN .
+    (65) factor -> LPAREN expresion RPAREN .
 
-    OP_MUL          reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    OP_DIV          reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    OP_SUM          reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    OP_SUB          reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    LESS            reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    GREATER         reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    NOT_EQUAL       reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    EQUAL           reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    GREATER_EQUAL   reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    LESS_EQUAL      reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    SEMICOLON       reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    COMMA           reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
-    RPAREN          reduce using rule 64 (factor -> LPAREN expresion RPAREN .)
+    OP_MUL          reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    OP_DIV          reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    OP_SUM          reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    OP_SUB          reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    LESS            reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    GREATER         reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    NOT_EQUAL       reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    EQUAL           reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    GREATER_EQUAL   reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    LESS_EQUAL      reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    SEMICOLON       reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    COMMA           reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
+    RPAREN          reduce using rule 65 (factor -> LPAREN expresion RPAREN .)
 
 
 state 112
 
-    (45) f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .
+    (46) f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .
 
-    ID              reduce using rule 45 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
-    KEYWORD_IF      reduce using rule 45 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
-    KEYWORD_DO      reduce using rule 45 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
-    KEYWORD_PRINT   reduce using rule 45 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
-    RBRACE          reduce using rule 45 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
-    RBRACKET        reduce using rule 45 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
+    ID              reduce using rule 46 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
+    KEYWORD_IF      reduce using rule 46 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
+    KEYWORD_DO      reduce using rule 46 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
+    KEYWORD_PRINT   reduce using rule 46 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
+    RBRACE          reduce using rule 46 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
+    RBRACKET        reduce using rule 46 (f_call -> ID LPAREN expresion_list_opt RPAREN SEMICOLON .)
 
 
 state 113
 
-    (48) expresion_list -> expresion_list COMMA expresion .
+    (49) expresion_list -> expresion_list COMMA expresion .
 
-    COMMA           reduce using rule 48 (expresion_list -> expresion_list COMMA expresion .)
-    RPAREN          reduce using rule 48 (expresion_list -> expresion_list COMMA expresion .)
+    COMMA           reduce using rule 49 (expresion_list -> expresion_list COMMA expresion .)
+    RPAREN          reduce using rule 49 (expresion_list -> expresion_list COMMA expresion .)
 
 
 state 114
 
-    (40) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if . LBRACE body RBRACE else_arg SEMICOLON
+    (41) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if . LBRACE body RBRACE else_arg SEMICOLON
 
     LBRACE          shift and go to state 120
 
 
 state 115
 
-    (39) cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE . LPAREN expresion RPAREN SEMICOLON
+    (39) cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE . KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
 
-    LPAREN          shift and go to state 121
+    KEYWORD_WHILE   shift and go to state 121
 
 
 state 116
@@ -1778,14 +1782,14 @@ state 119
     (30) statement -> . cycle
     (31) statement -> . f_call
     (32) statement -> . print
-    (71) empty -> .
+    (72) empty -> .
     (33) assign -> . ID ASSIGN_SIGN expresion SEMICOLON
-    (40) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-    (39) cycle -> . KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
-    (45) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
+    (41) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (39) cycle -> . KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (46) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
     (34) print -> . KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON
 
-    RBRACKET        reduce using rule 71 (empty -> .)
+    RBRACKET        reduce using rule 72 (empty -> .)
     ID              shift and go to state 28
     KEYWORD_IF      shift and go to state 38
     KEYWORD_DO      shift and go to state 39
@@ -1803,7 +1807,7 @@ state 119
 
 state 120
 
-    (40) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE . body RBRACE else_arg SEMICOLON
+    (41) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE . body RBRACE else_arg SEMICOLON
     (24) body -> . statement_list
     (25) statement_list -> . statement statement_list
     (26) statement_list -> . statement
@@ -1813,14 +1817,14 @@ state 120
     (30) statement -> . cycle
     (31) statement -> . f_call
     (32) statement -> . print
-    (71) empty -> .
+    (72) empty -> .
     (33) assign -> . ID ASSIGN_SIGN expresion SEMICOLON
-    (40) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-    (39) cycle -> . KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
-    (45) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
+    (41) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (39) cycle -> . KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (46) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
     (34) print -> . KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON
 
-    RBRACE          reduce using rule 71 (empty -> .)
+    RBRACE          reduce using rule 72 (empty -> .)
     ID              shift and go to state 28
     KEYWORD_IF      shift and go to state 38
     KEYWORD_DO      shift and go to state 39
@@ -1838,35 +1842,10 @@ state 120
 
 state 121
 
-    (39) cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN . expresion RPAREN SEMICOLON
-    (50) expresion -> . exp comparador exp
-    (51) expresion -> . exp
-    (58) exp -> . exp OP_SUM termino
-    (59) exp -> . exp OP_SUB termino
-    (60) exp -> . termino
-    (61) termino -> . termino OP_MUL factor
-    (62) termino -> . termino OP_DIV factor
-    (63) termino -> . factor
-    (64) factor -> . LPAREN expresion RPAREN
-    (65) factor -> . OP_SUM varcte
-    (66) factor -> . OP_SUB varcte
-    (67) factor -> . varcte
-    (68) varcte -> . ID
-    (69) varcte -> . CTE_INT
-    (70) varcte -> . CTE_FLOAT
+    (39) cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE . LPAREN expresion RPAREN SEMICOLON
 
-    LPAREN          shift and go to state 65
-    OP_SUM          shift and go to state 61
-    OP_SUB          shift and go to state 63
-    ID              shift and go to state 58
-    CTE_INT         shift and go to state 67
-    CTE_FLOAT       shift and go to state 68
+    LPAREN          shift and go to state 125
 
-    expresion                      shift and go to state 125
-    exp                            shift and go to state 60
-    termino                        shift and go to state 62
-    factor                         shift and go to state 64
-    varcte                         shift and go to state 66
 
 state 122
 
@@ -1884,17 +1863,42 @@ state 123
 
 state 124
 
-    (40) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body . RBRACE else_arg SEMICOLON
+    (41) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body . RBRACE else_arg SEMICOLON
 
     RBRACE          shift and go to state 127
 
 
 state 125
 
-    (39) cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion . RPAREN SEMICOLON
+    (39) cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN . expresion RPAREN SEMICOLON
+    (51) expresion -> . exp comparador exp
+    (52) expresion -> . exp
+    (59) exp -> . exp OP_SUM termino
+    (60) exp -> . exp OP_SUB termino
+    (61) exp -> . termino
+    (62) termino -> . termino OP_MUL factor
+    (63) termino -> . termino OP_DIV factor
+    (64) termino -> . factor
+    (65) factor -> . LPAREN expresion RPAREN
+    (66) factor -> . OP_SUM varcte
+    (67) factor -> . OP_SUB varcte
+    (68) factor -> . varcte
+    (69) varcte -> . ID
+    (70) varcte -> . CTE_INT
+    (71) varcte -> . CTE_FLOAT
 
-    RPAREN          shift and go to state 128
+    LPAREN          shift and go to state 65
+    OP_SUM          shift and go to state 61
+    OP_SUB          shift and go to state 63
+    ID              shift and go to state 58
+    CTE_INT         shift and go to state 67
+    CTE_FLOAT       shift and go to state 68
 
+    expresion                      shift and go to state 128
+    exp                            shift and go to state 60
+    termino                        shift and go to state 62
+    factor                         shift and go to state 64
+    varcte                         shift and go to state 66
 
 state 126
 
@@ -1907,22 +1911,22 @@ state 126
 
 state 127
 
-    (40) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE . else_arg SEMICOLON
-    (42) else_arg -> . KEYWORD_ELSE cuadr_else LBRACE body RBRACE
-    (44) else_arg -> . empty
-    (71) empty -> .
+    (41) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE . else_arg SEMICOLON
+    (43) else_arg -> . KEYWORD_ELSE cuadr_else LBRACE body RBRACE
+    (45) else_arg -> . empty
+    (72) empty -> .
 
     KEYWORD_ELSE    shift and go to state 131
-    SEMICOLON       reduce using rule 71 (empty -> .)
+    SEMICOLON       reduce using rule 72 (empty -> .)
 
     else_arg                       shift and go to state 130
     empty                          shift and go to state 132
 
 state 128
 
-    (39) cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN . SEMICOLON
+    (39) cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion . RPAREN SEMICOLON
 
-    SEMICOLON       shift and go to state 133
+    RPAREN          shift and go to state 133
 
 
 state 129
@@ -1934,37 +1938,32 @@ state 129
 
 state 130
 
-    (40) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg . SEMICOLON
+    (41) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg . SEMICOLON
 
     SEMICOLON       shift and go to state 135
 
 
 state 131
 
-    (42) else_arg -> KEYWORD_ELSE . cuadr_else LBRACE body RBRACE
-    (43) cuadr_else -> .
+    (43) else_arg -> KEYWORD_ELSE . cuadr_else LBRACE body RBRACE
+    (44) cuadr_else -> .
 
-    LBRACE          reduce using rule 43 (cuadr_else -> .)
+    LBRACE          reduce using rule 44 (cuadr_else -> .)
 
     cuadr_else                     shift and go to state 136
 
 state 132
 
-    (44) else_arg -> empty .
+    (45) else_arg -> empty .
 
-    SEMICOLON       reduce using rule 44 (else_arg -> empty .)
+    SEMICOLON       reduce using rule 45 (else_arg -> empty .)
 
 
 state 133
 
-    (39) cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .
+    (39) cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN . SEMICOLON
 
-    ID              reduce using rule 39 (cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
-    KEYWORD_IF      reduce using rule 39 (cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
-    KEYWORD_DO      reduce using rule 39 (cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
-    KEYWORD_PRINT   reduce using rule 39 (cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
-    RBRACE          reduce using rule 39 (cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
-    RBRACKET        reduce using rule 39 (cycle -> KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
+    SEMICOLON       shift and go to state 137
 
 
 state 134
@@ -1977,26 +1976,38 @@ state 134
 
 state 135
 
-    (40) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .
+    (41) condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .
 
-    ID              reduce using rule 40 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
-    KEYWORD_IF      reduce using rule 40 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
-    KEYWORD_DO      reduce using rule 40 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
-    KEYWORD_PRINT   reduce using rule 40 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
-    RBRACE          reduce using rule 40 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
-    RBRACKET        reduce using rule 40 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
+    ID              reduce using rule 41 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
+    KEYWORD_IF      reduce using rule 41 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
+    KEYWORD_DO      reduce using rule 41 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
+    KEYWORD_PRINT   reduce using rule 41 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
+    RBRACE          reduce using rule 41 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
+    RBRACKET        reduce using rule 41 (condition -> KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON .)
 
 
 state 136
 
-    (42) else_arg -> KEYWORD_ELSE cuadr_else . LBRACE body RBRACE
+    (43) else_arg -> KEYWORD_ELSE cuadr_else . LBRACE body RBRACE
 
-    LBRACE          shift and go to state 137
+    LBRACE          shift and go to state 138
 
 
 state 137
 
-    (42) else_arg -> KEYWORD_ELSE cuadr_else LBRACE . body RBRACE
+    (39) cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .
+
+    ID              reduce using rule 39 (cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
+    KEYWORD_IF      reduce using rule 39 (cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
+    KEYWORD_DO      reduce using rule 39 (cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
+    KEYWORD_PRINT   reduce using rule 39 (cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
+    RBRACE          reduce using rule 39 (cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
+    RBRACKET        reduce using rule 39 (cycle -> KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON .)
+
+
+state 138
+
+    (43) else_arg -> KEYWORD_ELSE cuadr_else LBRACE . body RBRACE
     (24) body -> . statement_list
     (25) statement_list -> . statement statement_list
     (26) statement_list -> . statement
@@ -2006,20 +2017,20 @@ state 137
     (30) statement -> . cycle
     (31) statement -> . f_call
     (32) statement -> . print
-    (71) empty -> .
+    (72) empty -> .
     (33) assign -> . ID ASSIGN_SIGN expresion SEMICOLON
-    (40) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
-    (39) cycle -> . KEYWORD_DO LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
-    (45) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
+    (41) condition -> . KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON
+    (39) cycle -> . KEYWORD_DO cuadr_do LBRACE body RBRACE KEYWORD_WHILE LPAREN expresion RPAREN SEMICOLON
+    (46) f_call -> . ID LPAREN expresion_list_opt RPAREN SEMICOLON
     (34) print -> . KEYWORD_PRINT LPAREN print_items RPAREN SEMICOLON
 
-    RBRACE          reduce using rule 71 (empty -> .)
+    RBRACE          reduce using rule 72 (empty -> .)
     ID              shift and go to state 28
     KEYWORD_IF      shift and go to state 38
     KEYWORD_DO      shift and go to state 39
     KEYWORD_PRINT   shift and go to state 40
 
-    body                           shift and go to state 138
+    body                           shift and go to state 139
     statement_list                 shift and go to state 30
     statement                      shift and go to state 31
     empty                          shift and go to state 32
@@ -2029,18 +2040,18 @@ state 137
     f_call                         shift and go to state 36
     print                          shift and go to state 37
 
-state 138
-
-    (42) else_arg -> KEYWORD_ELSE cuadr_else LBRACE body . RBRACE
-
-    RBRACE          shift and go to state 139
-
-
 state 139
 
-    (42) else_arg -> KEYWORD_ELSE cuadr_else LBRACE body RBRACE .
+    (43) else_arg -> KEYWORD_ELSE cuadr_else LBRACE body . RBRACE
 
-    SEMICOLON       reduce using rule 42 (else_arg -> KEYWORD_ELSE cuadr_else LBRACE body RBRACE .)
+    RBRACE          shift and go to state 140
+
+
+state 140
+
+    (43) else_arg -> KEYWORD_ELSE cuadr_else LBRACE body RBRACE .
+
+    SEMICOLON       reduce using rule 43 (else_arg -> KEYWORD_ELSE cuadr_else LBRACE body RBRACE .)
 
 WARNING: 
 WARNING: Conflicts:
