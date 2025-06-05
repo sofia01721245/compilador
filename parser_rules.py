@@ -3,28 +3,25 @@ from semantic import estructura, get_operand_and_type
 import ply.yacc as yacc
 from lexer import tokens
 
+
 def p_programa(p):
-    'Programa : KEYWORD_PROGRAM ID SEMICOLON vars_opt funcs_opt KEYWORD_MAIN LBRACE body RBRACE KEYWORD_END SEMICOLON'
+    'Programa : KEYWORD_PROGRAM ID SEMICOLON vars_opt funcs_opt main_marker LBRACE body RBRACE KEYWORD_END SEMICOLON'
     
-    # Generate GOTOMAIN quadruple BEFORE parsing the main body
-    # This should be the first quadruple (or close to it)
-    main_start_quad = estructura.linea + 1  # Next quadruple will be main's first instruction
+    estructura.cuadruplos.insert(0, (1, 'GOTOMAIN', -1, -1, estructura.main_start_line + 2)) # mas dos por el shift 
     
-    # Insert GOTOMAIN at the beginning of the quadruple list
-    estructura.cuadruplos.insert(0, (1, 'gotomain', -1, -1, main_start_quad + 1))
-    
-    # Update all existing quadruple line numbers since we inserted at position 0
     for i in range(1, len(estructura.cuadruplos)):
         old_quad = estructura.cuadruplos[i]
-        estructura.cuadruplos[i] = (old_quad[0] + 1, old_quad[1], old_quad[2], old_quad[3], 
-                                   old_quad[4] + 1 if isinstance(old_quad[4], int) else old_quad[4])
+        estructura.cuadruplos[i] = (old_quad[0] + 1,) + old_quad[1:]
     
-    # Update line counter
-    estructura.linea += 1
-    
-    # Switch back to global scope for main
     estructura.current_function = 'global'
-    p[0] = ('Programa', [p[2], p[4], p[5], p[6], p[8], 'end', ';'])
+    p[0] = ('Programa', [p[2], p[4], p[5], p[6], p[8], p[9], 'end', ';'])
+
+def p_main_marker(p):
+    'main_marker : KEYWORD_MAIN'
+    # Save where main will start (next quadruple)
+    estructura.main_start_line = estructura.linea 
+    p[0] = p[1]
+
 
 def p_vars_opt(p):
     '''vars_opt : KEYWORD_VAR var_lines
@@ -122,15 +119,15 @@ def p_parametros_opt(p):
     else:
         p[0] = ('parametros_opt', p[1])
 
-
-
 def p_parametros(p):
-    '''parametros : ID COLON type COMMA parametros
+    '''parametros : parametros COMMA ID COLON type
                   | ID COLON type'''
     
-    if len(p) == 6:  # ID COLON type COMMA parametros
-        var_id = p[1]
-        var_type = p[3][1] if isinstance(p[3], tuple) else p[3]
+    if len(p) == 6:  # parametros COMMA ID COLON type (right recursion)
+        var_id = p[3]  # The ID is now at position 3
+        var_type = p[5][1] if isinstance(p[5], tuple) else p[5]  # Type is at position 5
+        
+        print(f"DEBUG: Processing parameter {var_id} : {var_type}")
         
         # Declare current parameter
         if estructura.func_directory.has_variable(estructura.current_function, var_id):
@@ -140,11 +137,11 @@ def p_parametros(p):
         else:
             estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param=True)
         
-        # Get remaining parameters
-        rest_params = p[5][1] if isinstance(p[5], tuple) and len(p[5]) > 1 else []
-        all_params = [(var_id, var_type)] + rest_params
+        prev_params = p[1][1] if isinstance(p[1], tuple) and len(p[1]) > 1 else []
         
-    else:  # ID COLON type (last parameter)
+        all_params = prev_params + [(var_id, var_type)]
+        
+    else:  
         var_id = p[1]
         var_type = p[3][1] if isinstance(p[3], tuple) else p[3]
         
@@ -159,23 +156,6 @@ def p_parametros(p):
         all_params = [(var_id, var_type)]
     
     p[0] = ('parametros', all_params)
-
-def p_param_list(p):
-    '''param_list : ID COLON type COMMA param_list
-                  | empty'''
-
-    if len(p) == 6:  # ID COLON type COMMA param_list
-        # Get parameters from the rest of the list
-        rest_params = p[5] if p[5] else []
-        
-        # Add current parameter to the beginning
-        current_param = (p[1], p[3][1])  # (ID, type)
-        all_params = [current_param] + rest_params
-        
-        # DO NOT declare parameters here - just collect them
-        p[0] = all_params
-    else:  # empty
-        p[0] = []
 
 def p_body(p):
     'body : statement_list'
@@ -402,23 +382,44 @@ def p_f_call_simple(p):
     else:
         expr_list = []
     
+    print(f"DEBUG: Function call {func_name}")
+    print(f"DEBUG: Expression list: {expr_list}")
+    print(f"DEBUG: Stack before popping: {estructura.stack_operandos}")
+    
     # For each expression, pop from operand stack
     args = []
-    for _ in range(len(expr_list)):
+    for i in range(len(expr_list)):
         if estructura.stack_operandos:
             operand, op_type = estructura.stack_operandos.pop()
-            args.insert(0, (operand, op_type))  # Insert at beginning to maintain order
+            args.insert(0, (operand, op_type))
+            print(f"DEBUG: Popped ({operand}, {op_type}), args now: {args}")
         
-    # Rest of your validation logic...
+    print(f"DEBUG: Final args: {args}")
+    
     if not estructura.func_directory.function_exsist(func_name):
         estructura.semantic_errors.append(f"Funcion '{func_name}' no esta declarada.")
         return
 
     expected_params = estructura.func_directory.get_func_param(func_name)
+    print(f"DEBUG: Expected params: {expected_params}")
     
+    # cantidad de args
     if len(args) != len(expected_params):
         estructura.semantic_errors.append(f"Funcion '{func_name}' necesita {len(expected_params)} argumentos, pero recibió {len(args)}.")
         return
+
+    for i, (arg_value, arg_type) in enumerate(args):
+        expected_param_name, expected_type = expected_params[i]
+        print(f"DEBUG: Checking arg {i+1}: ({arg_value}, {arg_type}) vs param ({expected_param_name}, {expected_type})")
+        
+        if arg_type != expected_type:
+            estructura.semantic_errors.append(
+                f"Error de tipo en llamada a '{func_name}': "
+                f"argumento {i+1} ('{arg_value}') es '{arg_type}' pero el parametro '{expected_param_name}' espera '{expected_type}'"
+            )
+            return
+
+    print(f"DEBUG: Type checking passed!")
 
     # Generate quadruple
     func_start_quad = estructura.func_directory.get_start_line(func_name)
