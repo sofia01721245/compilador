@@ -23,10 +23,10 @@ void fact (n : int, a : float)
 ];
  
  
-void some_other( n : int )
+void some_other( c : string )
 [  var n : float
    { 
-      n = "woooooooooo 9"; 
+      c = "woooooooooo 9"; 
       print("hello "); 
       xf = 7;
  
@@ -52,7 +52,7 @@ main
     };
  
 print("texto ");
-some_other(4)
+some_other("yes")
 n = 58 + 9 * 5;
  
 }
@@ -83,7 +83,7 @@ print_symbol_table()
 
 test = (convert_quadruples_to_test(estructura.cuadruplos))
 
-print( test)
+print(test)
 
 test_interpreter(test)
 

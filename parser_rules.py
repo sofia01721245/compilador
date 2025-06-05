@@ -123,10 +123,18 @@ def p_parametros(p):
         var_type = p[5][1] if isinstance(p[5], tuple) else p[5]
         
         if estructura.func_directory.has_variable(estructura.current_function, var_id):
-            estructura.semantic_errors.append(
-                f"Parametro '{var_id}' ya declarado en función '{estructura.current_function}'."
-            )
+            # Variable exists - check if types match
+            existing_type = estructura.func_directory.get_variable_type(var_id, estructura.current_function)
+            if existing_type != var_type:
+                estructura.semantic_errors.append(
+                    f"Error de tipos: Parametro '{var_id}' ya declarado con tipo '{existing_type}', no se puede redeclarar como '{var_type}'."
+                )
+            else:
+                estructura.semantic_errors.append(
+                    f"Parametro '{var_id}' ya declarado en función '{estructura.current_function}'."
+                )
         else:
+            # Variable doesn't exist - add it
             estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param=True)
         
         prev_params = p[1][1] if isinstance(p[1], tuple) and len(p[1]) > 1 else []
@@ -137,12 +145,19 @@ def p_parametros(p):
         var_type = p[3][1] if isinstance(p[3], tuple) else p[3]
         
         if estructura.func_directory.has_variable(estructura.current_function, var_id):
-            estructura.semantic_errors.append(
-                f"Parametro '{var_id}' ya declarado en función '{estructura.current_function}'."
-            )
+            # Variable exists - check if types match
+            existing_type = estructura.func_directory.get_variable_type(var_id, estructura.current_function)
+            if existing_type != var_type:
+                estructura.semantic_errors.append(
+                    f"Error de tipos: Parametro '{var_id}' ya declarado con tipo '{existing_type}', no se puede redeclarar como '{var_type}'."
+                )
+            else:
+                estructura.semantic_errors.append(
+                    f"Parametro '{var_id}' ya declarado en función '{estructura.current_function}'."
+                )
         else:
             estructura.func_directory.add_variable(var_id, var_type, estructura.current_function, is_param=True)
-        
+
         all_params = [(var_id, var_type)]
     
     p[0] = ('parametros', all_params)
@@ -185,22 +200,19 @@ def p_assign(p):
         estructura.semantic_errors.append("Error: No hay operando para asignación.")
         return
         
-    valor, tipo = estructura.stack_operandos.pop()
+    valor, tipo_expresion = estructura.stack_operandos.pop()
     var_name = p[1]
 
-    # Check if variable exists
     if estructura.func_directory.has_variable(estructura.current_function, var_name):
         tipo_variable = estructura.func_directory.get_variable_type(var_name, estructura.current_function)
     else:
         estructura.semantic_errors.append(f"Variable '{var_name}' no declarada.")
         return
 
-    # Type compatibility check
-    if tipo != tipo_variable:
-        estructura.semantic_errors.append(f"Error de tipos: No se puede asignar {tipo} a {tipo_variable}.")
+    if tipo_expresion != tipo_variable:
+        estructura.semantic_errors.append(f"Error de tipos: No se puede asignar '{tipo_expresion}' a variable '{var_name}' de tipo '{tipo_variable}'.")
         return
     
-    # Generate proper assignment quadruple: (line, '=', source, -1, destination)
     estructura.linea += 1
     estructura.cuadruplos.append((estructura.linea, '=', valor, -1, var_name))
     
@@ -250,7 +262,7 @@ def p_print_items(p):
 
 def p_print_item(p):
     '''print_item : expresion
-                  | CTE_STRING'''
+                  | varcte'''
     if isinstance(p[1], tuple) and p[1][0] != 'CTE_STRING':
         p[0] = ('expresion', p[1])
     else:
@@ -334,7 +346,6 @@ def p_else_arg_empty(p):
         # Fill in the GOTOF destination
         old_quad = estructura.cuadruplos[gotof_index]
         estructura.cuadruplos[gotof_index] = (old_quad[0], old_quad[1], old_quad[2], old_quad[3], estructura.linea + 1)
-
 def p_f_call_simple(p):
     'f_call : ID LPAREN expresion_list_opt RPAREN SEMICOLON'
     func_name = p[1]
@@ -363,6 +374,7 @@ def p_f_call_simple(p):
         estructura.semantic_errors.append(f"Funcion '{func_name}' necesita {len(expected_params)} argumentos, pero recibió {len(args)}.")
         return
 
+    # Generate parameter assignment quadruples
     for i, (arg_value, arg_type) in enumerate(args):
         expected_param_name, expected_type = expected_params[i]
         if arg_type != expected_type:
@@ -371,11 +383,15 @@ def p_f_call_simple(p):
                 f"argumento {i+1} ('{arg_value}') es '{arg_type}' pero el parametro '{expected_param_name}' espera '{expected_type}'"
             )
             return
+        
+        # Generate quadruple to assign argument value to parameter
+        estructura.linea += 1
+        estructura.cuadruplos.append((estructura.linea, 'PARAM', arg_value, -1, expected_param_name))
 
     # Generate function call quadruple
     func_start_quad = estructura.func_directory.get_start_line(func_name)
     estructura.linea += 1
-    estructura.cuadruplos.append((estructura.linea, 'GOTO', func_name, -1, func_start_quad))
+    estructura.cuadruplos.append((estructura.linea, 'GOTOSUB', func_name, -1, func_start_quad))
     
     p[0] = ('f_call', {'function': func_name, 'args': args})
 
@@ -526,7 +542,9 @@ def p_factor(p):
 def p_varcte(p):
     '''varcte : ID
               | CTE_INT
-              | CTE_FLOAT'''
+              | CTE_FLOAT
+              | CTE_STRING'''
+    
     if p.slice[1].type == 'ID':
         var_name = p[1]
         if estructura.func_directory.has_variable(estructura.current_function, var_name):
@@ -542,6 +560,9 @@ def p_varcte(p):
     elif p.slice[1].type == 'CTE_FLOAT':
         estructura.stack_operandos.append((p[1], 'float'))
         p[0] = ('varcte', [('CTE_FLOAT', p[1])])
+    elif p.slice[1].type == 'CTE_STRING':
+        estructura.stack_operandos.append((p[1], 'string')) 
+        p[0] =  ('varcte', [('CTE_STRING', p[1])])
 
 def p_empty(p):
     '''empty :'''
