@@ -3,11 +3,11 @@ var n : int ;
   j , i : float;
   s : string;
  
-void fact (n : int, a : int)
-[  var b : int;
+void fact (n : int, a : float)
+[  var b : float;
  
     if (n > 1 )
-      {  b = a * n;
+      {  b = a * n * 0.55;
          fact (n-1, b);  
       }
       else
@@ -18,7 +18,8 @@ void fact (n : int, a : int)
  
 void some_other( n : int )
 [  var n : float
-   {  n = "woooooooooo 5"; 
+   { 
+      n = "woooooooooo 9"; 
       print("hello "); 
       xf = 7;
  
@@ -29,9 +30,9 @@ void some_other( n : int )
  
 main 
 {  n = 5;
-   fact(n, 1);
+   fact(n, 1.1);
  
-   fact(n+1, 1);
+   fact(n+1, 1.2);
  
     do {
       print(3, "w", 4);
@@ -44,6 +45,7 @@ main
     };
  
 print("texto ");
+some_other(4)
 n = 58 + 9 * 5;
  
 }
