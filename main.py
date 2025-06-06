@@ -1,7 +1,7 @@
 from lexer import PlyTokenizer
 from parser_rules import parser, syntax_errors
 from utils import print_tree
-from semantic import estructura, print_quadruples, print_symbol_table, print_memory_allocation
+from semantic import estructura, print_quadruples, print_symbol_table, print_memory_allocation, generate_function_data
 from vm import convert_quadruples_to_test, test_interpreter
 
 # Crear archivo ld
@@ -78,6 +78,7 @@ if estructura.cuadruplos:
     print_quadruples()
     print_symbol_table()
     print_memory_allocation()
+    generate_function_data()
 
     test = convert_quadruples_to_test(estructura.cuadruplos)
 

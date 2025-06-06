@@ -25,13 +25,14 @@ class VarTable:
         return None
 
 class Function:
-    def __init__(self, name, start_quad, return_type='void'):
+    def __init__(self, name, start_quad, return_type='void', address=None):
         self.name = name
         self.var_table = VarTable()
         self.start_quad = start_quad
         self.return_type = return_type
         self.param_count = 0
         self.local_var_count = 0
+        self.address = address  
 
 class MemoryManager:
     def __init__(self):
@@ -40,6 +41,7 @@ class MemoryManager:
             'global_int': (1000, 1999),
             'global_float': (2000, 2999),
             'global_str': (3000, 3999),
+            'global_void': (4000, 6999),
             'local_int': (7000, 7999),
             'local_float': (8000, 8999),
             'local_str': (9000, 11999),
@@ -56,6 +58,7 @@ class MemoryManager:
             'global_int': 1000,
             'global_float': 2000,
             'global_str': 3000,
+            'global_void': 4000,        # Count of void functions (not addresses)
             'local_int': 7000,
             'local_float': 8000,
             'local_str': 9000,
@@ -131,6 +134,11 @@ class MemoryManager:
         self.counters[memory_type] += 1
         self.constants[const_key] = address
         return address
+    
+    def allocate_function(self):
+        address = self.counters['global_void']
+        self.counters['global_void'] += 1
+        return address
 
 class FunctionDirectory:
     def __init__(self):
@@ -141,7 +149,9 @@ class FunctionDirectory:
     def add_function(self, name, start_quad):
         if name in self.functions:
             raise Exception(f"Function '{name}' already declared.")
-        self.functions[name] = Function(name, start_quad)
+        
+        func_address = self.memory_manager.allocate_function()
+        self.functions[name] = Function(name, start_quad, address=func_address)
 
     def add_variable(self, name, tipo, function_name, is_param):
         if function_name != "global" and function_name not in self.functions:
@@ -243,7 +253,7 @@ class Estructura:
             ('int', 'float', '=='): 'bool',
             ('int', 'float', '!='): 'bool',
 
-            ('float', 'int', '+'): 'float',   # ← This handles temp_float + 2
+            ('float', 'int', '+'): 'float',   
             ('float', 'int', '-'): 'float',
             ('float', 'int', '*'): 'float',
             ('float', 'int', '/'): 'float',
@@ -269,14 +279,12 @@ class Estructura:
         self.main_start_line = 0
 
     def new_temp(self, result_type='int'):
-        """Create new temporary variable with proper memory allocation"""
         self.counter_temporales += 1
         temp_name = f't{self.counter_temporales}'
         address = self.func_directory.memory_manager.allocate_temp(result_type)
         return temp_name, address
     
     def get_operand_address(self, operand):
-        """Get memory address for operand (variable, constant, or temp)"""
         if isinstance(operand, str):
             if operand.startswith('t'):  # temporary variable
                 # For temp variables, we'll use the temp name as identifier
@@ -352,6 +360,123 @@ def print_symbol_table():
     print(f"{'Valor':<15} {'Dirección':<10}")
     for const_val, address in estructura.func_directory.memory_manager.constants.items():
         print(f"{const_val:<15} {address:<10}")
+
+def print_function_table():
+    print("\n=== Tabla de funciones===")
+    print(f"{'Función':<15} {'Registro':<10} {'Parámetros':<12} {'Locales':<30}")
+    print("-" * 80)
+    
+    for func_name, func in estructura.func_directory.functions.items():
+        # Count parameters by type
+        param_counts = {'int': 0, 'float': 0, 'string': 0}
+        local_counts = {'int': 0, 'float': 0, 'string': 0}
+        
+        for var_name, var in func.var_table.variables.items():
+            if var.is_param:
+                param_counts[var.tipo] += 1
+            else:
+                local_counts[var.tipo] += 1
+        
+        # Format parameter info
+        params_str = f"{sum(param_counts.values())} total"
+        if any(param_counts.values()):
+            param_details = []
+            for tipo, count in param_counts.items():
+                if count > 0:
+                    param_details.append(f"{count} {tipo}")
+            params_str += f" ({', '.join(param_details)})"
+        
+        # Format local variables info
+        locals_str = f"{sum(local_counts.values())} total"
+        if any(local_counts.values()):
+            local_details = []
+            for tipo, count in local_counts.items():
+                if count > 0:
+                    local_details.append(f"{count} {tipo}")
+            locals_str += f" ({', '.join(local_details)})"
+        
+        print(f"{func_name:<15} {func.start_quad:<10} {params_str:<12} {locals_str:<30}")
+
+def print_function_memory_layout():
+    print("\n=== Memoria por funcion ===")
+    
+    for func_name, func in estructura.func_directory.functions.items():
+        print(f"\nFunción: {func_name}")
+        print(f"Registro de inicio: {func.start_quad}")
+        
+        # Separate parameters and locals
+        parameters = []
+        locals_vars = []
+        
+        for var_name, var in func.var_table.variables.items():
+            var_info = f"{var_name} ({var.tipo}) @ {var.address}"
+            if var.is_param:
+                parameters.append(var_info)
+            else:
+                locals_vars.append(var_info)
+        
+        if parameters:
+            print("  Parámetros:")
+            for param in parameters:
+                print(f"    {param}")
+        
+        if locals_vars:
+            print("  Variables locales:")
+            for local_var in locals_vars:
+                print(f"    {local_var}")
+        
+        # Count by type for summary
+        param_counts = {'int': 0, 'float': 0, 'string': 0}
+        local_counts = {'int': 0, 'float': 0, 'string': 0}
+        
+        for var_name, var in func.var_table.variables.items():
+            if var.is_param:
+                param_counts[var.tipo] += 1
+            else:
+                local_counts[var.tipo] += 1
+        
+        print(f"  Resumen: {sum(param_counts.values())} parámetros, {sum(local_counts.values())} locales")
+        
+        # Memory requirements
+        total_params = sum(param_counts.values())
+        total_locals = sum(local_counts.values())
+        print(f"  Memoria requerida: {total_params + total_locals} variables")
+
+def generate_function_data():
+    print("\n=== Datos de Functiones ===")
+    
+    for func_name, func in estructura.func_directory.functions.items():
+        print(f"\nFunción g_void ({func_name}), en el registro {func.address}")  # ← Use function's memory address
+        
+        # Count parameters and locals by type
+        param_counts = {'int': 0, 'float': 0, 'string': 0}
+        local_counts = {'int': 0, 'float': 0, 'string': 0}
+        param_names = []
+        local_names = []
+        
+        for var_name, var in func.var_table.variables.items():
+            if var.is_param:
+                param_counts[var.tipo] += 1
+                param_names.append(f"{var_name} ({var.tipo})")
+            else:
+                local_counts[var.tipo] += 1
+                local_names.append(f"{var_name} ({var.tipo})")
+        
+        # Show parameters
+        total_params = sum(param_counts.values())
+        print(f"{total_params} parámetros ({', '.join(param_names)})")
+        
+        # Show locals by type
+        print(f"Locales:")
+        for tipo in ['int', 'float', 'string']:
+            if local_counts[tipo] > 0:
+                tipo_locals = [name for name in local_names if f'({tipo})' in name]
+                print(f"  - {local_counts[tipo]} {tipo}: {', '.join([name.split(' (')[0] for name in tipo_locals])}")
+        
+        # Memory layout
+        print(f"Código inicia en quad: {func.start_quad}")
+        print(f"Dirección de función: {func.address}")
+        print(f"Memoria de : {total_params + sum(local_counts.values())} variables")
 
 def print_memory_allocation():
     print("\nAsignación de memoria:")

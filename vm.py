@@ -101,6 +101,7 @@ class VirtualMachine:
             'global_int': (1000, 1999),
             'global_float': (2000, 2999),
             'global_str': (3000, 3999),
+            'global_void': (4000, 6999),
             'local_int': (7000, 7999),
             'local_float': (8000, 8999),
             'local_str': (9000, 11999),
@@ -311,12 +312,12 @@ def test_interpreter(test_quadruples):
             num, op, arg1, arg2, dest = parts
             quadruples.append((int(num), op, arg1, arg2, dest))
 
-    print("\n=== EXECUTING QUADRUPLES ===")
+    print("")
+    for i, quad in enumerate(quadruples):
+        print(f"  {i}: {quad}")
     
-    # Execute quadruples
-    pc = 0
-    max_iterations = 1000
-    iteration = 0
+    print(f"")
+    print(f"Total quads: {len(quadruples)}")
     
     # Find starting point (gotomain)
     start_pc = 0
@@ -325,8 +326,12 @@ def test_interpreter(test_quadruples):
             start_pc = int(dest) - 1
             break
     
+    print(f"Starting PC: {start_pc+1}")
+    
+    # Execute quadruples
     pc = start_pc
-    print(f"Starting execution at PC={start_pc+1}")
+    max_iterations = 1000
+    iteration = 0
     
     while pc < len(quadruples) and iteration < max_iterations:
         iteration += 1
@@ -341,11 +346,18 @@ def test_interpreter(test_quadruples):
         if op == 'gotomain':
             new_pc = int(dest) - 1
             if 0 <= new_pc < len(quadruples):
+                print(f"Jumping to main at PC={new_pc+1}")
                 pc = new_pc
                 continue
             else:
                 print(f"Error: Invalid jump destination {dest}")
                 break
+            
+        elif op == 'int_to_float':
+            # Convert integer to float
+            int_val = vm.get_memory_value(arg1)
+            float_val = float(int_val)
+            vm.set_memory_value(dest, float_val)
             
         elif op == '=':
             value = vm.get_memory_value(arg1)
