@@ -1,62 +1,21 @@
 from lexer import PlyTokenizer
 from parser_rules import parser, syntax_errors
 from utils import print_tree
-from semantic import estructura, print_quadruples, print_symbol_table
+from semantic import estructura, print_quadruples, print_symbol_table, print_memory_allocation
 from vm import convert_quadruples_to_test, test_interpreter
 
 # Crear archivo ld
-input_text = """program proquacks;
-var n : int ;
-  j , i : float;
-  s : string;
- 
-void fact (n : int, a : float)
-[  var b : float;
- 
-    if (n > 1 )
-      {  b = a * n * 0.55;
-         fact (n-1, b);  
-      }
-      else
-      {  print(a);   }; 
-
-];
- 
- 
-void some_other( c : string )
-[  var n : float
-   { 
-      c = "woooooooooo 9"; 
-      print("hello "); 
-      xf = 7;
- 
-      fact(3, 5.8);
-   } 
-];
- 
- 
-main 
-{  n = 5;
-   fact(n, 1.1);
- 
-   fact(n+1, 1.2);
- 
-    do {
-      print(3, "w", 4);
-    }while( 3 <7 );
- 
-    if ( 3 >= 8)
-    {
-      print("texto ");
-      n = 58 + 9 * 5;
-    };
- 
-print("texto ");
-some_other("yes")
-n = 58 + 9 * 5;
- 
+input_text = """
+program mprogram;
+var a, b : int;
+c : float;
+main
+{ a = 7;
+b = 3;
+c = a / b + 2;
+print(c);
 }
-end;
+end
 """
 
 with open("semantica.ld", "w") as f:
@@ -72,20 +31,52 @@ tokenizer = PlyTokenizer()
 
 syntax_errors = []
 
-parse_tree = parser.parse(test_code, lexer=tokenizer.lexer)
+estructura.__init__()  
+
+try:
+    # Parse
+    print("Starting parse...")
+    parse_tree = parser.parse(test_code, lexer=tokenizer.lexer, debug=False)
+    print(f"Parse completed. Tree type: {type(parse_tree)}")
+    
+    if parse_tree is None:
+        print("ERROR: Parser returned None - check for syntax errors")
+        # Try to get more parser debug info
+        import ply.yacc as yacc
+        yacc.restart()
+        parse_tree = parser.parse(test_code, lexer=tokenizer.lexer, debug=True)
+    
+except Exception as e:
+    print(f"Exception during parsing: {e}")
+    import traceback
+    traceback.print_exc()
+    parse_tree = None
+
 print("\n--- PARSE TREE ---")
-print_tree(parse_tree)
+if parse_tree is not None:
+    print_tree(parse_tree)
+else:
+    print("Parse tree is None - parsing failed")
 
+print("\n--- SEMANTIC ANALYSIS RESULTS ---")
+print(f"Final operand stack: {estructura.stack_operandos}")
+print(f"Current function: {estructura.current_function}")
+print(f"Line counter: {estructura.linea}")
 
-print(estructura.stack_operandos)
-print_quadruples()
-print_symbol_table()
+if estructura.cuadruplos:
+    print_quadruples()
+    print_symbol_table()
+    print_memory_allocation()
 
-test = (convert_quadruples_to_test(estructura.cuadruplos))
+    test = convert_quadruples_to_test(estructura.cuadruplos)
 
-print(test)
+    print("\n---Representacion intermediaria ---")
+    print(test)
 
-test_interpreter(test)
+    print("\n=== Ejecutar programa ===")
+    test_interpreter(test)
+else:
+    print("No quadruples generated - compilation failed")
 
 if tokenizer.errors:
     print("\n--- ERRORES DE LEXICO DETECTADOS ---")
@@ -96,7 +87,6 @@ else:
     print("\n---NO SE DETECTARON ERRORES LÉXICOS ---")
 
 
-# Imprimir errores de sintaxis
 if syntax_errors:
     print("\n--- ERRORES DE SINTAXIS DETECTADOS ---")
     for err in syntax_errors:
@@ -104,7 +94,6 @@ if syntax_errors:
 else:
     print("\n---NO SE DETECTARON ERRORES SINTÁCTICOS ---")
 
-# Imprimir errores semánticos
 if estructura.semantic_errors:
     print("\n--- ERRORES SEMÁNTICOS DETECTADOS ---")
     for err in estructura.semantic_errors:

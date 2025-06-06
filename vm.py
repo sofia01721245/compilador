@@ -1,7 +1,6 @@
 def convert_quadruples_to_test(cuads):
     # Memory address ranges
     constants_map = {}
-    variable_map = {}
     
     # Counters for each memory type
     const_int_counter = 17000
@@ -16,135 +15,57 @@ def convert_quadruples_to_test(cuads):
     temp_float_counter = 13000
     temp_bool_counter = 14000
 
-    # First, analyze context to determine what should be constants vs variables
-    print_operands = set()
-    other_operands = set()
-    
-    for quad in cuads:
-        if len(quad) >= 5:
-            num, op, arg1, arg2, dest = quad[:5]
-            
-            if op.upper() == 'PRINT':
-                # Anything in PRINT is likely a string constant
-                if isinstance(arg1, str) and not arg1.startswith('t') and not arg1.isdigit():
-                    print_operands.add(arg1)
-            else:
-                # Everything else are variables/identifiers
-                for operand in [arg1, arg2, dest]:
-                    if isinstance(operand, str) and not operand.startswith('t') and not operand.isdigit():
-                        other_operands.add(operand)
-
-    def get_address(name, context="operand"):
-        nonlocal const_int_counter, const_float_counter, const_str_counter
-        nonlocal global_int_counter, global_float_counter, global_str_counter
-        nonlocal temp_int_counter, temp_float_counter, temp_bool_counter
-        
-        if name in (None, 'None', '-', -1):
+    def get_address(operand, context="operand"):
+        if operand in (None, 'None', '-', -1):
             return -1
         
         # For jump destinations, return as-is
         if context == "jump":
-            return str(name)
-            
-        # Handle constants
-        if isinstance(name, int) or (isinstance(name, str) and name.isdigit()):
-            const_key = str(name)
-            if const_key not in constants_map:
-                constants_map[const_key] = const_int_counter
-                const_int_counter += 1
-            return str(constants_map[const_key])
-            
-        if isinstance(name, float) or (isinstance(name, str) and '.' in name and name.replace('.', '').replace('-', '').isdigit()):
-            const_key = str(name)
-            if const_key not in constants_map:
-                constants_map[const_key] = const_float_counter
-                const_float_counter += 1
-            return str(constants_map[const_key])
+            return str(operand)
         
-        # Handle strings based on context
-        if isinstance(name, str):
-            # String literals that appear in PRINT statements → constants
-            if name in print_operands:
-                if name not in constants_map:
-                    constants_map[name] = const_str_counter
-                    const_str_counter += 1
-                return str(constants_map[name])
-            
-            # Everything else → variables
-            if name not in variable_map:
-                if name.startswith('t') and name[1:].isdigit():
-                    # Temporary variables
-                    variable_map[name] = temp_int_counter
-                    temp_int_counter += 1
-                elif name in ['n']:
-                    # Global int variables (from symbol table)
-                    variable_map[name] = global_int_counter
-                    global_int_counter += 1
-                elif name in ['a', 'b', 'i', 'j']:
-                    # Global float variables (from symbol table)
-                    variable_map[name] = global_float_counter
-                    global_float_counter += 1
-                elif name in ['s']:
-                    # Global string variables (from symbol table)
-                    variable_map[name] = global_str_counter
-                    global_str_counter += 1
-                else:
-                    # Function names and other identifiers
-                    variable_map[name] = global_str_counter
-                    global_str_counter += 1
-            
-            return str(variable_map[name])
+        # If it's already an address, return it
+        if isinstance(operand, int) and 1000 <= operand <= 19999:
+            return str(operand)
         
-        return str(name)
+        return str(operand)
 
-    # First pass: collect all operands
-    for quad in cuads:
-        if len(quad) >= 5:
-            num, op, arg1, arg2, dest = quad[:5]
-            
-            op_lower = op.lower()
-            
-            if op_lower in ['gotomain', 'goto', 'gotof', 'gotot']:
-                # Process operands but not jump destinations
-                if arg1 not in (None, 'None', '-', -1):
-                    get_address(arg1, "operand")
-                if arg2 not in (None, 'None', '-', -1):
-                    get_address(arg2, "operand")
-            else:
-                # Regular operations
-                if arg1 not in (None, 'None', '-', -1):
-                    get_address(arg1, "operand")
-                if arg2 not in (None, 'None', '-', -1):
-                    get_address(arg2, "operand")
-                if dest not in (None, 'None', '-', -1):
-                    get_address(dest, "operand")
-
-    # Count memory usage correctly
+    # Memory allocation tracking
     memory_regions = {
-        'global_int': global_int_counter - 1000,
-        'global_float': global_float_counter - 2000,
-        'global_str': global_str_counter - 3000,
+        'global_int': 0,
+        'global_float': 0,
+        'global_str': 0,
         'global_void': 0,
         'local_int': 0,
         'local_float': 0,
         'local_str': 0,
-        'temp_int': temp_int_counter - 12000,
-        'temp_float': temp_float_counter - 13000,
-        'temp_bool': temp_bool_counter - 14000,
-        'cte_int': len([k for k in constants_map.keys() if k.replace('-', '').isdigit() and '.' not in k]),
-        'cte_float': len([k for k in constants_map.keys() if '.' in k and k.replace('.', '').replace('-', '').isdigit()]),
-        'cte_str': len([k for k in constants_map.keys() if not (k.replace('-', '').isdigit() and '.' not in k) and not ('.' in k and k.replace('.', '').replace('-', '').isdigit())])
+        'temp_int': 0,
+        'temp_float': 0,
+        'temp_bool': 0,
+        'cte_int': 0,
+        'cte_float': 0,
+        'cte_str': 0
     }
 
-    # Generate output
+    # Count memory usage from semantic analysis
+    from semantic import estructura
+    mm = estructura.func_directory.memory_manager
+    
+    for mem_type, counter in mm.counters.items():
+        start_addr = mm.MEMORY_RANGES[mem_type][0]
+        used = counter - start_addr
+        memory_regions[mem_type] = used
+
+    # Generate output sections
     sections = []
     
     # Constants section
-    if constants_map:
+    if mm.constants:
         constants_lines = []
-        for const_val, addr in sorted(constants_map.items(), key=lambda x: x[1]):
+        for const_val, addr in sorted(mm.constants.items(), key=lambda x: x[1]):
             constants_lines.append(f"{const_val} {addr}")
         sections.append("\n".join(constants_lines))
+    else:
+        sections.append("")  # Empty constants section
     
     # Memory allocation section
     memory_lines = [f"{k} {v}" for k, v in memory_regions.items()]
@@ -158,10 +79,10 @@ def convert_quadruples_to_test(cuads):
             
             op_name = op.lower()
             
-            if op_name in ['gotomain', 'goto', 'gotof', 'gotot']:
+            if op_name in ['gotomain', 'goto', 'gotof', 'gotot', 'gosub']:
                 op1 = get_address(arg1, "operand") if arg1 not in (None, 'None', '-', -1) else -1
                 op2 = get_address(arg2, "operand") if arg2 not in (None, 'None', '-', -1) else -1
-                dst = get_address(dest, "jump")  # Keep line number as-is
+                dst = get_address(dest, "jump")
             else:
                 op1 = get_address(arg1, "operand") if arg1 not in (None, 'None', '-', -1) else -1
                 op2 = get_address(arg2, "operand") if arg2 not in (None, 'None', '-', -1) else -1
@@ -175,12 +96,11 @@ def convert_quadruples_to_test(cuads):
 
 class VirtualMachine:
     def __init__(self):
-        # Memory allocation ranges matching your specification
+        # Memory allocation ranges
         self.MEMORY_RANGES = {
             'global_int': (1000, 1999),
             'global_float': (2000, 2999),
             'global_str': (3000, 3999),
-            'global_void': (4000, 6999),
             'local_int': (7000, 7999),
             'local_float': (8000, 8999),
             'local_str': (9000, 11999),
@@ -192,8 +112,12 @@ class VirtualMachine:
             'cte_str': (19000, 19999)
         }
         
-        # Virtual memory - the big array managed by the VM
+        # Virtual memory
         self.virtual_memory = {}
+        
+        # Function call stack for handling recursion
+        self.call_stack = []
+        self.local_memory_stack = []
         
         # Memory allocation tracking
         self.memory_allocation = {
@@ -212,23 +136,74 @@ class VirtualMachine:
             'cte_str': 0,
         }
         
-        # Execution tracking
-        self.allocation_log = []
-        
     def get_memory_type(self, address):
         """Determine memory type based on address range"""
-        addr = int(address)
+        if isinstance(address, str):
+            try:
+                addr = int(address)
+            except:
+                return "temp"  # Assume temp variables for non-numeric addresses
+        else:
+            addr = address
+            
         for mem_type, (start, end) in self.MEMORY_RANGES.items():
             if start <= addr <= end:
                 return mem_type
         return "unknown"
+    
+    def push_local_context(self, func_name):
+        """Push new local memory context for function call"""
+        # Save current local memory state
+        local_snapshot = {}
+        for addr_str, value in self.virtual_memory.items():
+            if addr_str.isdigit():
+                addr = int(addr_str)
+                if 7000 <= addr <= 11999:  # Local memory range
+                    local_snapshot[addr_str] = value
+        
+        self.local_memory_stack.append(local_snapshot)
+        
+        # Clear local memory for new function
+        to_remove = []
+        for addr_str in self.virtual_memory:
+            if addr_str.isdigit():
+                addr = int(addr_str)
+                if 7000 <= addr <= 11999:
+                    to_remove.append(addr_str)
+        
+        for addr_str in to_remove:
+            del self.virtual_memory[addr_str]
+            
+        print(f"Pushed local context for {func_name}")
+    
+    def pop_local_context(self):
+        """Restore previous local memory context"""
+        if self.local_memory_stack:
+            local_snapshot = self.local_memory_stack.pop()
+            
+            # Clear current local memory
+            to_remove = []
+            for addr_str in self.virtual_memory:
+                if addr_str.isdigit():
+                    addr = int(addr_str)
+                    if 7000 <= addr <= 11999:
+                        to_remove.append(addr_str)
+            
+            for addr_str in to_remove:
+                del self.virtual_memory[addr_str]
+            
+            # Restore previous local memory
+            for addr_str, value in local_snapshot.items():
+                self.virtual_memory[addr_str] = value
+                
+            print("Popped local context")
         
     def load_and_initialize_memory(self, quadruple_string):
         """Load intermediate representation and initialize virtual memory"""
         test_split = quadruple_string.strip().split('\n')
         section = 0
         
-        print("=== LOADING WITH PROPER MEMORY ALLOCATION ===")
+        print("=== LOADING MEMORY ===")
         
         for line in test_split:
             if line.strip() == "":
@@ -249,7 +224,7 @@ class VirtualMachine:
                         except:
                             const_value = value.strip('"').strip("'")
                         self.virtual_memory[str(address)] = const_value
-                        print(f"Constant -> Memory[{address}] = {const_value}")
+                        print(f"Constant INT -> Memory[{address}] = {const_value}")
                         
                     elif 18000 <= address <= 18999:  # Float constants
                         const_value = float(value)
@@ -267,41 +242,53 @@ class VirtualMachine:
             elif section == 1 and len(parts) == 2:  # Memory allocation section
                 memory_type, count = parts
                 self.memory_allocation[memory_type] = int(count)
-                
-        # Show memory allocation summary using your ranges
-        print("\n=== MEMORY ALLOCATION BY RANGES ===")
-        for mem_type, (start, end) in self.MEMORY_RANGES.items():
-            count = self.memory_allocation.get(mem_type, 0)
-            if count > 0:
-                print(f"{mem_type}: {count} variables in range {start}-{end}")
         
         return test_split, section
 
     def get_memory_value(self, address_str):
-        """Access virtual memory"""
+        """Access virtual memory with proper handling for temp variables"""
         if address_str is None or address_str == '-1':
             return None
+        
+        # Handle temporary variable names like 't1', 't2', etc.
+        if isinstance(address_str, str) and address_str.startswith('t') and address_str[1:].isdigit():
+            # Map temp variable to its memory address
+            temp_num = int(address_str[1:])
+            temp_address = str(12000 + temp_num - 1)  # Map t1->12000, t2->12001, etc.
+            if temp_address in self.virtual_memory:
+                return self.virtual_memory[temp_address]
+            else:
+                self.virtual_memory[temp_address] = 0
+                return 0
             
-        if address_str in self.virtual_memory:
-            return self.virtual_memory[address_str]
+        if str(address_str) in self.virtual_memory:
+            return self.virtual_memory[str(address_str)]
         else:
             # Initialize memory location if accessing for first time
-            self.virtual_memory[address_str] = 0
+            self.virtual_memory[str(address_str)] = 0
             return 0
     
     def set_memory_value(self, address_str, value):
-        """Set value in virtual memory"""
+        """Set value in virtual memory with proper handling for temp variables"""
         if address_str is None or address_str == '-1':
             return
+        
+        # Handle temporary variable names
+        if isinstance(address_str, str) and address_str.startswith('t') and address_str[1:].isdigit():
+            temp_num = int(address_str[1:])
+            temp_address = str(12000 + temp_num - 1)
+            self.virtual_memory[temp_address] = value
+            mem_type = self.get_memory_type(temp_address)
+            print(f"Memory[{temp_address}] ({mem_type}) := {value}")
+            return
             
-        self.virtual_memory[address_str] = value
-        self.allocation_log.append((address_str, value))
+        self.virtual_memory[str(address_str)] = value
         mem_type = self.get_memory_type(address_str)
         print(f"Memory[{address_str}] ({mem_type}) := {value}")
 
 
 def test_interpreter(test_quadruples):
-    """Execute quadruples using proper memory allocation"""
+    """Execute quadruples using proper memory allocation and function calls"""
     
     # Create VM instance
     vm = VirtualMachine()
@@ -339,16 +326,26 @@ def test_interpreter(test_quadruples):
             break
     
     pc = start_pc
+    print(f"Starting execution at PC={start_pc+1}")
     
     while pc < len(quadruples) and iteration < max_iterations:
         iteration += 1
+        if pc < 0 or pc >= len(quadruples):
+            print(f"Error: PC out of bounds: {pc}")
+            break
+            
         num, op, arg1, arg2, dest = quadruples[pc]
         
         print(f"PC={pc+1}: {op} {arg1} {arg2} {dest}")
         
         if op == 'gotomain':
-            pc = int(dest) - 1
-            continue
+            new_pc = int(dest) - 1
+            if 0 <= new_pc < len(quadruples):
+                pc = new_pc
+                continue
+            else:
+                print(f"Error: Invalid jump destination {dest}")
+                break
             
         elif op == '=':
             value = vm.get_memory_value(arg1)
@@ -357,23 +354,30 @@ def test_interpreter(test_quadruples):
         elif op == '+':
             val1 = vm.get_memory_value(arg1)
             val2 = vm.get_memory_value(arg2)
-            vm.set_memory_value(dest, val1 + val2)
+            result = val1 + val2
+            vm.set_memory_value(dest, result)
             
         elif op == '-':
             val1 = vm.get_memory_value(arg1)
             val2 = vm.get_memory_value(arg2)
-            vm.set_memory_value(dest, val1 - val2)
+            result = val1 - val2
+            vm.set_memory_value(dest, result)
             
         elif op == '*':
             val1 = vm.get_memory_value(arg1)
             val2 = vm.get_memory_value(arg2)
-            vm.set_memory_value(dest, val1 * val2)
+            result = val1 * val2
+            vm.set_memory_value(dest, result)
             
         elif op == '/':
             val1 = vm.get_memory_value(arg1)
             val2 = vm.get_memory_value(arg2)
             result = val1 / val2 if val2 != 0 else 0
             vm.set_memory_value(dest, result)
+            
+        elif op == 'uminus':
+            val = vm.get_memory_value(arg1)
+            vm.set_memory_value(dest, -val)
             
         elif op == '>':
             val1 = vm.get_memory_value(arg1)
@@ -421,12 +425,183 @@ def test_interpreter(test_quadruples):
             pc = int(dest) - 1
             continue
             
+        elif op == 'era':
+            # Allocate space for function call
+            func_name = arg1
+            vm.push_local_context(func_name)
+            
+        elif op == 'param':
+            # Assign parameter value
+            param_value = vm.get_memory_value(arg1)
+            vm.set_memory_value(dest, param_value)
+            
+        elif op == 'gosub':
+            # Function call
+            func_name = arg1
+            return_address = pc + 1
+            vm.call_stack.append(return_address)
+            pc = int(dest) - 1
+            continue
+            
+        elif op == 'endfunc':
+            # End of void function - return to caller
+            if vm.call_stack:
+                print(f"Void function ended naturally, returning to caller")
+                return_address = vm.call_stack.pop()
+                vm.pop_local_context()
+                pc = return_address
+                continue
+            else:
+                print("Warning: ENDFUNC without call stack")
+        
+        elif op == 'return':
+            # Explicit return (shouldn't happen in void functions, but handle it)
+            if vm.call_stack:
+                return_address = vm.call_stack.pop()
+                vm.pop_local_context()
+                pc = return_address
+                continue
+            else:
+                print("Program ended with RETURN")
+                break
+            
         elif op == 'print':
             value = vm.get_memory_value(arg1)
             print(f"OUTPUT: {value}")
             
-        elif op == 'println':
-            print("OUTPUT: (newline)")
+        elif op == 'end':
+            print("Program ended normally")
+            break
+            
+        else:
+            print(f"Unknown operation: {op}")
+        
+        pc += 1
+    
+    while pc < len(quadruples) and iteration < max_iterations:
+        iteration += 1
+        num, op, arg1, arg2, dest = quadruples[pc]
+        
+        print(f"PC={pc+1}: {op} {arg1} {arg2} {dest}")
+        
+        if op == 'gotomain':
+            pc = int(dest) - 1
+            continue
+            
+        elif op == '=':
+            value = vm.get_memory_value(arg1)
+            vm.set_memory_value(dest, value)
+            
+        elif op == '+':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            result = val1 + val2
+            vm.set_memory_value(dest, result)
+            
+        elif op == '-':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            result = val1 - val2
+            vm.set_memory_value(dest, result)
+            
+        elif op == '*':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            result = val1 * val2
+            vm.set_memory_value(dest, result)
+            
+        elif op == '/':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            result = val1 / val2 if val2 != 0 else 0
+            vm.set_memory_value(dest, result)
+            
+        elif op == 'uminus':
+            val = vm.get_memory_value(arg1)
+            vm.set_memory_value(dest, -val)
+            
+        elif op == '>':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            vm.set_memory_value(dest, val1 > val2)
+            
+        elif op == '<':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            vm.set_memory_value(dest, val1 < val2)
+            
+        elif op == '>=':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            vm.set_memory_value(dest, val1 >= val2)
+            
+        elif op == '<=':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            vm.set_memory_value(dest, val1 <= val2)
+            
+        elif op == '==':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            vm.set_memory_value(dest, val1 == val2)
+            
+        elif op == '!=':
+            val1 = vm.get_memory_value(arg1)
+            val2 = vm.get_memory_value(arg2)
+            vm.set_memory_value(dest, val1 != val2)
+            
+        elif op == 'gotof':
+            condition = vm.get_memory_value(arg1)
+            if not condition:
+                pc = int(dest) - 1
+                continue
+                
+        elif op == 'gotot':
+            condition = vm.get_memory_value(arg1)
+            if condition:
+                pc = int(dest) - 1
+                continue
+                
+        elif op == 'goto':
+            pc = int(dest) - 1
+            continue
+            
+        elif op == 'era':
+            # Allocate space for function call
+            func_name = arg1
+            vm.push_local_context(func_name)
+            
+        elif op == 'param':
+            # Assign parameter value
+            param_value = vm.get_memory_value(arg1)
+            vm.set_memory_value(dest, param_value)
+            
+        elif op == 'gosub':
+            # Function call
+            func_name = arg1
+            return_address = pc + 1
+            vm.call_stack.append(return_address)
+            pc = int(dest) - 1
+            continue
+            
+        elif op == 'return':
+            # Return from function
+            if vm.call_stack:
+                return_address = vm.call_stack.pop()
+                vm.pop_local_context()
+                pc = return_address
+                continue
+            else:
+                print("Program ended with RETURN")
+                break
+            
+        elif op == 'print':
+            value = vm.get_memory_value(arg1)
+            print(f"OUTPUT: {value}")
+            
+        elif op == 'end':
+            print("Program ended")
+            break
             
         else:
             print(f"Unknown operation: {op}")
