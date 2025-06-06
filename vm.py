@@ -326,7 +326,6 @@ def test_interpreter(test_quadruples):
             start_pc = int(dest) - 1
             break
     
-    print(f"Starting PC: {start_pc+1}")
     
     # Execute quadruples
     pc = start_pc

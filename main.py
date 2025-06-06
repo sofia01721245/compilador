@@ -6,28 +6,84 @@ from vm import convert_quadruples_to_test, test_interpreter
 
 # Crear archivo ld
 input_text = """
-program prockaks;
-var n : int;
+program complete_test;
+var counter : int;
+var result : float;
+var message : string;
 
-void fact(n:int, a:int)
-[ var b: int;
-    { if(n>1)
-        {
-            b=a*n;
-            fact(n-1, b);
-        }else
-        { print(a); };
+void math_operations(a : int, b : float, c : int)
+[ var temp : int;
+  var factor : float;
+  var output : string;
+  { 
+    temp = a * c;
+    factor = b + temp;
+    output = "Result: ";
+    
+    if(factor > 10.0)
+    {
+      print(output);
+      print(factor);
     }
+    else
+    {
+      temp = temp - 5;
+      print(temp);
+    };
+  }
 ];
 
-main
-{   
-n = 5;
-    fact(n, 1);
-    fact(n+1, 1);
+void string_processor(text : string, length : int)
+[ var processed : string;
+  var count : int;
+  {
+    processed = text;
+    count = length;
+    
+    print("Processing: ");
+    print(processed);
+    print("Length: ");
+    print(count);
+  }
+];
+
+main 
+{
+  counter = 0;
+  result = 0.0;
+  message = "Hello World";
+  
+  math_operations(5, 3.14, 2);
+  math_operations(1, 15.5, 3);
+
+  
+  string_processor("Test String", 11);
+  string_processor(message, 11);
+  
+  counter = 1;
+  do {
+    result = result + counter * 2.5;
+    counter = counter + 1;
+    print("Iteration: ");
+    print(counter);
+    print("Result: ");
+    print(result);
+  } while(counter <= 5);
+  
+  counter = 10 + 5 * 3;
+  result = counter / 2.0;
+  
+  print("Final counter: ");
+  print(counter);
+  print("Final result: ");
+  print(result);
 }
 end;
 """
+
+
+
+
 
 with open("semantica.ld", "w") as f:
     f.write(input_text)
@@ -50,13 +106,7 @@ try:
     parse_tree = parser.parse(test_code, lexer=tokenizer.lexer, debug=False)
     print(f"Parse completed. Tree type: {type(parse_tree)}")
     
-    if parse_tree is None:
-        print("ERROR: Parser returned None - check for syntax errors")
-        # Try to get more parser debug info
-        import ply.yacc as yacc
-        yacc.restart()
-        parse_tree = parser.parse(test_code, lexer=tokenizer.lexer, debug=True)
-    
+  
 except Exception as e:
     print(f"Exception during parsing: {e}")
     import traceback
