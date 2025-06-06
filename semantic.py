@@ -212,7 +212,7 @@ class Estructura:
             ('int', 'int', '+'): 'int',
             ('int', 'int', '-'): 'int',
             ('int', 'int', '*'): 'int',
-            ('int', 'int', '/'): 'int',
+            ('int', 'int', '/'): 'float',    # ← Division always produces float
             ('int', 'int', '<'): 'bool',
             ('int', 'int', '>'): 'bool',
             ('int', 'int', '<='): 'bool',
@@ -231,6 +231,7 @@ class Estructura:
             ('float', 'float', '=='): 'bool',
             ('float', 'float', '!='): 'bool',
 
+            # Mixed type operations (float + int = float)
             ('int', 'float', '+'): 'float',
             ('int', 'float', '-'): 'float',
             ('int', 'float', '*'): 'float',
@@ -242,7 +243,7 @@ class Estructura:
             ('int', 'float', '=='): 'bool',
             ('int', 'float', '!='): 'bool',
 
-            ('float', 'int', '+'): 'float',
+            ('float', 'int', '+'): 'float',   # ← This handles temp_float + 2
             ('float', 'int', '-'): 'float',
             ('float', 'int', '*'): 'float',
             ('float', 'int', '/'): 'float',

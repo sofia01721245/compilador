@@ -6,16 +6,27 @@ from vm import convert_quadruples_to_test, test_interpreter
 
 # Crear archivo ld
 input_text = """
-program mprogram;
-var a, b : int;
-c : float;
+program prockaks;
+var n : int;
+
+void fact(n:int, a:int)
+[ var b: int;
+    { if(n>1)
+        {
+            b=a*n;
+            fact(n-1, b);
+        }else
+        { print(a); };
+    }
+];
+
 main
-{ a = 7;
-b = 3;
-c = a / b + 2;
-print(c);
+{   
+n = 5;
+    fact(n, 1);
+    fact(n+1, 1);
 }
-end
+end;
 """
 
 with open("semantica.ld", "w") as f:

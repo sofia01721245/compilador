@@ -14,7 +14,7 @@ def p_programa(p):
     'Programa : KEYWORD_PROGRAM ID SEMICOLON vars_opt funcs_opt main_marker LBRACE body RBRACE KEYWORD_END SEMICOLON'
     
     # gotomain al principio
-    estructura.cuadruplos.insert(0, (1, 'GOTOMAIN', -1, -1, estructura.main_start_line + 2)) # mas dos por shift
+    estructura.cuadruplos.insert(0, (1, 'GOTOMAIN', -1, -1, estructura.main_start_line + 1)) # mas dos por shift
     
     for i in range(1, len(estructura.cuadruplos)):
         old_quad = estructura.cuadruplos[i]
@@ -28,7 +28,7 @@ def p_programa(p):
 
 def p_main_marker(p):
     'main_marker : KEYWORD_MAIN'
-    estructura.main_start_line = estructura.linea + 1  # Next quadruple will be main start
+    estructura.main_start_line = estructura.linea + 1
     print(f"DEBUG: Main starts at line {estructura.main_start_line}")
     p[0] = ('main_marker', p[1])
 
@@ -115,10 +115,7 @@ def p_FUNCS(p):
     func_name = p[2]
     params = p[5]
     vars_local = p[8]
-    body = p[10]  # body is now at position 10 due to added LBRACE
-    
-    # Void functions end naturally without explicit return
-    
+    body = p[10]
     p[0] = ('function', [('void', func_name), params, vars_local, body])
 
 def p_func_start(p):
@@ -135,7 +132,6 @@ def p_func_start(p):
 
 def p_func_end(p):
     'func_end :'
-    # Add function end marker for void functions
     estructura.linea += 1
     estructura.cuadruplos.append((estructura.linea, 'ENDFUNC', -1, -1, -1))
     estructura.current_function = 'global'
@@ -244,7 +240,6 @@ def p_assign(p):
         estructura.semantic_errors.append(f"Error de tipos: No se puede asignar '{tipo_expresion}' a variable '{var_name}' de tipo '{tipo_variable}'.")
         return
     
-    # Get memory addresses
     var_address = estructura.get_operand_address(var_name)
     value_address = estructura.get_operand_address(valor)
     
@@ -341,7 +336,6 @@ def p_condition(p):
     'condition : KEYWORD_IF LPAREN expresion RPAREN cuadr_if LBRACE body RBRACE else_arg SEMICOLON'
     if estructura.stack_saltos:
         salto_final_else = estructura.stack_saltos.pop()
-        # Fix the jump destination for the final GOTO
         old_quad = estructura.cuadruplos[salto_final_else]
         estructura.cuadruplos[salto_final_else] = (old_quad[0], old_quad[1], old_quad[2], old_quad[3], estructura.linea + 1)
     p[0] = ('condition', [p[1], p[3], p[7], p[9]])
@@ -359,7 +353,7 @@ def p_cuadr_if(p):
     
     condition_address = estructura.get_operand_address(valor)
     estructura.linea += 1
-    estructura.cuadruplos.append((estructura.linea, 'GOTOF', condition_address, -1, -1))  # Will be filled later
+    estructura.cuadruplos.append((estructura.linea, 'GOTOF', condition_address, -1, -1))
     estructura.stack_saltos.append(estructura.linea - 1)
 
 def p_else_arg(p):
@@ -369,12 +363,11 @@ def p_else_arg(p):
 def p_cuadr_else(p):
     'cuadr_else :'
     estructura.linea += 1
-    estructura.cuadruplos.append((estructura.linea, 'GOTO', -1, -1, -1))  # Will be filled later
+    estructura.cuadruplos.append((estructura.linea, 'GOTO', -1, -1, -1))
     goto_final_index = estructura.linea - 1
 
     if estructura.stack_saltos:
         gotof_index = estructura.stack_saltos.pop()
-        # Fill in the GOTOF destination
         old_quad = estructura.cuadruplos[gotof_index]
         estructura.cuadruplos[gotof_index] = (old_quad[0], old_quad[1], old_quad[2], old_quad[3], estructura.linea + 1)
         estructura.stack_saltos.append(goto_final_index)
@@ -385,7 +378,6 @@ def p_else_arg_empty(p):
     'else_arg : empty'
     if estructura.stack_saltos:
         gotof_index = estructura.stack_saltos.pop()
-        # Fill in the GOTOF destination
         old_quad = estructura.cuadruplos[gotof_index]
         estructura.cuadruplos[gotof_index] = (old_quad[0], old_quad[1], old_quad[2], old_quad[3], estructura.linea + 1)
 
@@ -412,16 +404,13 @@ def p_f_call_simple(p):
 
     expected_params = estructura.func_directory.get_func_param(func_name)
     
-    # Check argument count and types
     if len(args) != len(expected_params):
         estructura.semantic_errors.append(f"Funcion '{func_name}' necesita {len(expected_params)} argumentos, pero recibió {len(args)}.")
         return
 
-    # Generate ERA (space allocation) quadruple
     estructura.linea += 1
     estructura.cuadruplos.append((estructura.linea, 'ERA', func_name, -1, -1))
 
-    # Generate parameter assignment quadruples
     for i, (arg_value, arg_type) in enumerate(args):
         expected_param_name, expected_type = expected_params[i]
         if arg_type != expected_type:
@@ -431,15 +420,12 @@ def p_f_call_simple(p):
             )
             return
         
-        # Get memory addresses
         arg_address = estructura.get_operand_address(arg_value)
         param_address = estructura.func_directory.get_variable_address(expected_param_name, func_name)
         
-        # Generate quadruple to assign argument value to parameter
         estructura.linea += 1
         estructura.cuadruplos.append((estructura.linea, 'PARAM', arg_address, -1, param_address))
 
-    # Generate function call quadruple
     func_start_quad = estructura.func_directory.get_start_line(func_name)
     estructura.linea += 1
     estructura.cuadruplos.append((estructura.linea, 'GOSUB', func_name, -1, func_start_quad))
@@ -466,7 +452,6 @@ def p_expresion(p):
     '''expresion : exp comparador exp
                  | exp'''
     if len(p) == 4:
-        # Comparison operation
         if len(estructura.stack_operandos) < 2:
             estructura.semantic_errors.append("Error: Operandos insuficientes para comparación.")
             return
@@ -483,7 +468,6 @@ def p_expresion(p):
         temp_var, temp_address = estructura.new_temp(resultado_tipo)
         estructura.stack_operandos.append((temp_var, resultado_tipo))
         
-        # Get memory addresses
         left_address = estructura.get_operand_address(left_val)
         right_address = estructura.get_operand_address(right_val)
         
@@ -528,7 +512,6 @@ def p_exp(p):
         temp_var, temp_address = estructura.new_temp(resultado_tipo)
         estructura.stack_operandos.append((temp_var, resultado_tipo))
 
-        # Get memory addresses
         val1_address = estructura.get_operand_address(value1)
         val2_address = estructura.get_operand_address(value2)
 
@@ -564,7 +547,6 @@ def p_termino(p):
         temp_var, temp_address = estructura.new_temp(resultado_tipo)
         estructura.stack_operandos.append((temp_var, resultado_tipo))
 
-        # Get memory addresses
         val1_address = estructura.get_operand_address(value1)
         val2_address = estructura.get_operand_address(value2)
 
@@ -580,9 +562,9 @@ def p_factor(p):
               | OP_SUM varcte
               | OP_SUB varcte
               | varcte'''
-    if len(p) == 4:  # Parentheses
+    if len(p) == 4:
         p[0] = p[2]
-    elif len(p) == 3:  # Unary + or -
+    elif len(p) == 3:
         if not estructura.stack_operandos:
             estructura.semantic_errors.append("Error: No hay operando para operación unaria.")
             return
@@ -590,14 +572,13 @@ def p_factor(p):
         valor, tipo = estructura.stack_operandos.pop()
         
         if p[1] == '-':
-            # Generate unary minus quadruple
             temp_var, temp_address = estructura.new_temp(tipo)
             valor_address = estructura.get_operand_address(valor)
             estructura.linea += 1
             estructura.cuadruplos.append((estructura.linea, 'UMINUS', valor_address, -1, temp_address))
             estructura.stack_operandos.append((temp_var, tipo))
             p[0] = ('factor', [p[1], p[2]])
-        else:  # Unary plus - no operation needed
+        else:
             estructura.stack_operandos.append((valor, tipo))
             p[0] = ('factor', [p[2]])
     else:
@@ -637,12 +618,10 @@ def p_error(p):
     if p:
         msg = f"Error de sintaxis: token inesperado '{p.value}' en línea {p.lineno}"
         syntax_errors.append(msg)
-        print(f"PARSER ERROR: {msg}")  # Debug output
         parser.errok()
     else:
         msg = "Error de sintaxis: fin de archivo inesperado"
         syntax_errors.append(msg)
-        print(f"PARSER ERROR: {msg}")  # Debug output
 
 parser = yacc.yacc(debug=True)
 syntax_errors = []
