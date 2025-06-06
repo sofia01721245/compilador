@@ -69,10 +69,9 @@ if parse_tree is not None:
 else:
     print("Parse tree is None - parsing failed")
 
-print("\n--- SEMANTIC ANALYSIS RESULTS ---")
-print(f"Final operand stack: {estructura.stack_operandos}")
-print(f"Current function: {estructura.current_function}")
-print(f"Line counter: {estructura.linea}")
+print("\n--- Semantica  ---")
+print(f"Estado de funcion final: {estructura.current_function}")
+print(f"Contador de linea: {estructura.linea}")
 
 if estructura.cuadruplos:
     print_quadruples()
@@ -85,7 +84,7 @@ if estructura.cuadruplos:
     print("\n---Representacion intermediaria ---")
     print(test)
 
-    print("\n=== Ejecutar programa ===")
+    print("\n--- Ejecutar programa ---")
     test_interpreter(test)
 else:
     print("No quadruples generated - compilation failed")

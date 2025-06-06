@@ -443,10 +443,10 @@ def print_function_memory_layout():
         print(f"  Memoria requerida: {total_params + total_locals} variables")
 
 def generate_function_data():
-    print("\n=== Datos de Functiones ===")
+    print("\n-------------- Datos de Functiones ------")
     
     for func_name, func in estructura.func_directory.functions.items():
-        print(f"\nFunción g_void ({func_name}), en el registro {func.address}")  # ← Use function's memory address
+        print(f"\nFuncion g_void ({func_name}), en el registro {func.address}")  # ← Use function's memory address
         
         # Count parameters and locals by type
         param_counts = {'int': 0, 'float': 0, 'string': 0}
